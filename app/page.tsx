@@ -510,8 +510,8 @@ export default function Home() {
     showToast(`Successfully listed "${newListing.title}"!`);
     resetForm();
 
-    // Save to Supabase and sync back the real ID so future edits target the right row
-    const { data: inserted } = await supabase.from("products").insert({
+    // Save to Supabase — this makes the listing visible to ALL users on ALL devices
+    const { data: inserted, error: insertError } = await supabase.from("products").insert({
       title: newlyCreated.title,
       category: newlyCreated.category,
       price: newlyCreated.price,
@@ -522,6 +522,11 @@ export default function Home() {
       time_added: newlyCreated.timeAdded,
       seller: newlyCreated.seller,
     }).select("id").single();
+
+    if (insertError) {
+      showToast("Listed locally — sync to server failed. Check connection.", "info");
+      return;
+    }
 
     if (inserted?.id) {
       const supabaseId = inserted.id;
