@@ -188,15 +188,6 @@ export default function Home() {
     } catch {}
   };
 
-  // Track IDs of listings published by this user (stored in localStorage)
-  const [myListingIds, setMyListingIds] = useState<Set<number>>(() => {
-    if (typeof window === "undefined") return new Set();
-    try {
-      const saved = localStorage.getItem("campuskart_listings");
-      const listings = saved ? JSON.parse(saved) : [];
-      return new Set(listings.map((l: Product) => l.id));
-    } catch { return new Set(); }
-  });
 
   const handleEditListing = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -249,14 +240,15 @@ export default function Home() {
       const img = new Image();
       const url = URL.createObjectURL(file);
       img.onload = () => {
-        const MAX = 1000;
+        const MAX = file.size > 2 * 1024 * 1024 ? 800 : 1000;
+        const quality = file.size > 2 * 1024 * 1024 ? 0.75 : 0.85;
         const scale = Math.min(1, MAX / Math.max(img.width, img.height));
         const canvas = document.createElement("canvas");
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
         URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
+        resolve(canvas.toDataURL("image/jpeg", quality));
       };
       img.src = url;
     });
@@ -320,23 +312,6 @@ export default function Home() {
           const withEdits = deduped.map((p) => edits[p.id] ? { ...p, ...edits[p.id] } : p);
           setProducts(withEdits);
 
-          // Find Supabase products that match local listings by title+seller+category
-          // so the delete button shows on the correct cards
-          if (local.length > 0) {
-            const matchedIds = new Set<number>();
-            base.forEach((bp) => {
-              const match = local.find(
-                (lp) =>
-                  lp.title.toLowerCase() === bp.title.toLowerCase() &&
-                  lp.category === bp.category &&
-                  lp.seller === bp.seller
-              );
-              if (match) matchedIds.add(bp.id);
-            });
-            // Also keep original Date.now() IDs from localStorage
-            const localIds = new Set(local.map((l) => l.id));
-            setMyListingIds(new Set([...localIds, ...matchedIds]));
-          }
         } catch {
           setProducts(base);
         }
@@ -533,7 +508,6 @@ export default function Home() {
       const localId = newlyCreated.id;
       // Replace Date.now() ID with Supabase auto-increment ID everywhere
       setProducts(prev => prev.map(p => p.id === localId ? { ...p, id: supabaseId } : p));
-      setMyListingIds(prev => { const n = new Set(prev); n.delete(localId); n.add(supabaseId); return n; });
       try {
         const saved = localStorage.getItem("campuskart_listings");
         const listings = saved ? JSON.parse(saved) : [];
@@ -823,17 +797,15 @@ export default function Home() {
                         src={product.image}
                       />
 
-                      {myListingIds.has(product.id) && (
-                        <div className="absolute top-2 right-2 flex gap-1 z-10">
-                          <button
-                            onClick={(e) => handleEditListing(product, e)}
-                            className="bg-primary text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
-                            title="Edit your listing"
-                          >
-                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
-                          </button>
-                        </div>
-                      )}
+                      <div className="absolute top-2 right-2 flex gap-1 z-10">
+                        <button
+                          onClick={(e) => handleEditListing(product, e)}
+                          className="bg-primary text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                          title="Edit listing"
+                        >
+                          <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+                        </button>
+                      </div>
 
                       {product.isFacultyVerified && (
                         <div className="absolute top-4 left-4 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-sm backdrop-blur-sm">
