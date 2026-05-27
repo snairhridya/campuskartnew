@@ -94,10 +94,19 @@ export default function ProductDetailPage() {
     } catch {}
   }, [params.id]);
 
-  // Pre-fill edit form whenever product loads
+  // Pre-fill edit form and check ownership whenever product loads
   useEffect(() => {
     if (!product) return;
-    setIsMyListing(true); // allow editing any product
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      const mine = listings.some(
+        (l: Product) =>
+          l.id === product.id ||
+          (l.title.toLowerCase() === product.title.toLowerCase() && l.seller === product.seller)
+      );
+      setIsMyListing(mine);
+    } catch {}
     setEditForm({
       title: product.title,
       category: product.category,
