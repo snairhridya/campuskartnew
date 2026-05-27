@@ -1304,7 +1304,7 @@ export default function Home() {
                 image={cropSrc}
                 crop={crop}
                 zoom={zoom}
-                aspect={1}
+                aspect={4/3}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={(_, px) => setCroppedAreaPixels(px)}

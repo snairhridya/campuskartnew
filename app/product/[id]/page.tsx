@@ -537,12 +537,12 @@ export default function ProductDetailPage() {
               <button onClick={() => setShowCropModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container transition-colors">close</button>
             </div>
             <div className="relative w-full bg-black" style={{ height: 320 }}>
-              <Cropper image={cropSrc} crop={crop} zoom={zoom} aspect={1} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, px) => setCroppedAreaPixels(px)} />
+              <Cropper image={cropSrc} crop={crop} zoom={zoom} aspect={4/3} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, px) => setCroppedAreaPixels(px)} />
             </div>
             <div className="px-5 py-4 space-y-4">
               <div className="flex items-center gap-3">
                 <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_small</span>
-                <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-primary cursor-pointer" aria-label="Zoom" />
+                <input type="range" min={1} max={2} step={0.02} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-primary cursor-pointer" aria-label="Zoom" />
                 <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_large</span>
               </div>
               <div className="flex gap-3">
