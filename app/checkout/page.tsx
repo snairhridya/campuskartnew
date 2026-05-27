@@ -69,11 +69,22 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!validate()) return;
     setLoading(true);
-    await supabase.from("orders").insert({
+    const { data } = await supabase.from("orders").insert({
       status: "Pending Pickup",
       total,
       items: cartItems,
-    });
+    }).select("id").single();
+
+    // Save this order's ID to localStorage so only this user sees it in Orders
+    if (data?.id) {
+      try {
+        const saved = localStorage.getItem("campuskart_my_orders");
+        const myOrders: number[] = saved ? JSON.parse(saved) : [];
+        myOrders.unshift(data.id);
+        localStorage.setItem("campuskart_my_orders", JSON.stringify(myOrders));
+      } catch {}
+    }
+
     localStorage.removeItem("campuskart_cart");
     router.push("/order-confirmation");
   };

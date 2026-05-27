@@ -32,9 +32,22 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
+    // Only fetch orders placed by this user (IDs stored in localStorage)
+    let myOrderIds: number[] = [];
+    try {
+      const saved = localStorage.getItem("campuskart_my_orders");
+      myOrderIds = saved ? JSON.parse(saved) : [];
+    } catch {}
+
+    if (myOrderIds.length === 0) {
+      setOrders([]);
+      return;
+    }
+
     supabase
       .from("orders")
       .select("*")
+      .in("id", myOrderIds)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) {
