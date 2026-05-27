@@ -4,8 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { PRODUCTS, type Product } from "@/app/lib/products";
 import { supabase } from "@/lib/supabase";
-import Cropper, { Area } from "react-easy-crop";
-
 const CATEGORIES = ["Textbooks", "Electronics", "Dorm Essentials", "Bikes & Transport", "Clothing"];
 
 interface Review {
@@ -33,31 +31,13 @@ export default function ProductDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({ title: "", category: "Textbooks", price: "", condition: "Excellent", description: "", isFacultyVerified: false });
   const [editImagePreview, setEditImagePreview] = useState<string>("");
-  const [cropSrc, setCropSrc] = useState<string>("");
-  const [showCropModal, setShowCropModal] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [editSaved, setEditSaved] = useState(false);
-
-  const getCroppedImg = (src: string, px: Area): Promise<string> =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = px.width;
-        canvas.height = px.height;
-        canvas.getContext("2d")!.drawImage(img, px.x, px.y, px.width, px.height, 0, 0, px.width, px.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      };
-      img.src = src;
-    });
 
   const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => { setCropSrc(reader.result as string); setCrop({ x: 0, y: 0 }); setZoom(1); setShowCropModal(true); };
+    reader.onloadend = () => setEditImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -537,42 +517,9 @@ export default function ProductDetailPage() {
         )}
       </main>
 
-      {/* Crop Modal */}
-      {showCropModal && cropSrc && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80" onClick={() => setShowCropModal(false)} />
-          <div className="relative w-full max-w-md bg-surface rounded-2xl overflow-hidden shadow-2xl border border-outline-variant">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-outline-variant">
-              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface">Crop & Adjust Photo</h3>
-              <button onClick={() => setShowCropModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container transition-colors">close</button>
-            </div>
-            <div className="relative w-full bg-black" style={{ height: 320 }}>
-              <Cropper image={cropSrc} crop={crop} zoom={zoom} aspect={4/3} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, px) => setCroppedAreaPixels(px)} />
-            </div>
-            <div className="px-5 py-4 space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_small</span>
-                <input type="range" min={1} max={2} step={0.02} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-primary cursor-pointer" aria-label="Zoom" />
-                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_large</span>
-              </div>
-              <div className="flex gap-3">
-                <button type="button" onClick={() => setShowCropModal(false)} className="flex-1 py-3 rounded-xl border border-outline-variant font-label-lg text-on-surface hover:bg-surface-container active:scale-95 transition-all cursor-pointer">Cancel</button>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (croppedAreaPixels) {
-                      const cropped = await getCroppedImg(cropSrc, croppedAreaPixels);
-                      setEditImagePreview(cropped);
-                    }
-                    setShowCropModal(false);
-                  }}
-                  className="flex-1 py-3 rounded-xl bg-primary text-on-primary font-label-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md"
-                >
-                  Use Photo
-                </button>
-              </div>
-            </div>
-          </div>
+      {/* (crop modal removed — direct upload used instead) */}
+      {false && (
+        <div>
         </div>
       )}
 
