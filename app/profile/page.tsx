@@ -55,6 +55,16 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
+  const [stats, setStats] = useState({ bought: 0, sold: 0 });
+
+  useEffect(() => {
+    try {
+      const orderIds: number[] = JSON.parse(localStorage.getItem("campuskart_my_orders") || "[]");
+      const listings: unknown[] = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
+      setStats({ bought: orderIds.length, sold: listings.length });
+    } catch {}
+  }, []);
+
   const handleLogout = async () => {
     if (logoutConfirm) {
       await signOut();
@@ -128,9 +138,9 @@ export default function ProfilePage() {
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: "Bought",     value: PROFILE.stats.bought },
-            { label: "Sold",       value: PROFILE.stats.sold   },
-            { label: "Rating",     value: `${PROFILE.stats.rating}★`},
+            { label: "Bought", value: stats.bought },
+            { label: "Sold",   value: stats.sold   },
+            { label: "Rating", value: `${PROFILE.stats.rating}★` },
           ].map((stat) => (
             <div key={stat.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm">
               <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
