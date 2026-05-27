@@ -280,7 +280,7 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen mb-24 lg:mb-0">
+    <div className="bg-surface text-on-surface min-h-screen">
 
       {/* Top App Bar */}
       <header className="bg-surface shadow-sm sticky top-0 z-50 flex items-center justify-between w-full px-4 md:px-16 h-16 max-w-[1280px] mx-auto">
@@ -415,6 +415,22 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
+            {/* Action buttons — visible on all screens */}
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 bg-surface border-2 border-primary text-primary py-3 px-4 rounded-full font-label-lg text-label-lg hover:bg-surface-container-low active:scale-95 transition-all"
+              >
+                {addedToCart ? "✓ Added!" : "Add to Cart"}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                className="flex-1 bg-primary text-on-primary py-3 px-4 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all"
+              >
+                Buy Now
+              </button>
+            </div>
+
             {/* Description */}
             <div className="mt-4 p-4 bg-surface-container-low rounded-xl border border-outline-variant/30">
               <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
@@ -508,18 +524,6 @@ export default function ProductDetailPage() {
               );
             })()}
 
-            {/* Desktop action buttons */}
-            <div className="hidden lg:flex gap-4 mt-6">
-              <button
-                onClick={handleAddToCart}
-                className="flex-1 bg-surface border-2 border-primary text-primary py-4 px-6 rounded-full font-label-lg text-label-lg hover:bg-surface-container-low active:scale-95 transition-all"
-              >
-                {addedToCart ? "✓ ADDED!" : "ADD TO CART"}
-              </button>
-              <button onClick={handleBuyNow} className="flex-1 bg-primary text-on-primary py-4 px-6 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all">
-                BUY NOW
-              </button>
-            </div>
           </div>
         </div>
 
@@ -720,18 +724,6 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      {/* Mobile bottom action bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant px-4 py-3 flex gap-3 shadow-lg lg:hidden z-50">
-        <button
-          onClick={handleAddToCart}
-          className="flex-1 bg-surface border-2 border-primary text-primary py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all"
-        >
-          {addedToCart ? "✓ ADDED!" : "ADD TO CART"}
-        </button>
-        <button onClick={handleBuyNow} className="flex-1 bg-primary text-on-primary py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all">
-          BUY NOW
-        </button>
-      </div>
     </div>
   );
 }
