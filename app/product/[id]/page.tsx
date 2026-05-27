@@ -31,6 +31,17 @@ export default function ProductDetailPage() {
   const related = PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3);
 
   const handleAddToCart = () => {
+    try {
+      const saved = localStorage.getItem("campuskart_cart");
+      const cart = saved ? JSON.parse(saved) : [];
+      const existing = cart.find((i: { product: { id: number } }) => i.product?.id === product.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ product, quantity: 1 });
+      }
+      localStorage.setItem("campuskart_cart", JSON.stringify(cart));
+    } catch {}
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
