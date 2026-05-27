@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import Cropper, { Area } from "react-easy-crop";
 
 // Define TypeScript interfaces for our application state
 interface Product {
@@ -247,12 +248,35 @@ export default function Home() {
   });
   const [imagePreview, setImagePreview] = useState<string>("");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [cropSrc, setCropSrc] = useState<string>("");
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
+  const getCroppedImg = (src: string, px: Area): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = px.width;
+        canvas.height = px.height;
+        canvas.getContext("2d")!.drawImage(img, px.x, px.y, px.width, px.height, 0, 0, px.width, px.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.9));
+      };
+      img.src = src;
+    });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.onloadend = () => {
+      setCropSrc(reader.result as string);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setShowCropModal(true);
+    };
     reader.readAsDataURL(file);
   };
 
@@ -1257,6 +1281,73 @@ export default function Home() {
                 >
                   <span className="material-symbols-outlined text-[20px]">chat</span>
                   Contact Seller
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CROP MODAL */}
+      {showCropModal && cropSrc && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80" onClick={() => setShowCropModal(false)} />
+          <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-surface-variant dark:border-zinc-800">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-surface-variant dark:border-zinc-800">
+              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-zinc-100">Crop & Adjust Photo</h3>
+              <button onClick={() => setShowCropModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 text-on-surface dark:text-zinc-200 transition-colors cursor-pointer">close</button>
+            </div>
+
+            {/* Crop area */}
+            <div className="relative w-full bg-black" style={{ height: 320 }}>
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={(_, px) => setCroppedAreaPixels(px)}
+              />
+            </div>
+
+            {/* Zoom slider */}
+            <div className="px-5 py-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-on-surface-variant dark:text-zinc-400 text-[20px]">photo_size_select_small</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.05}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="flex-1 accent-primary cursor-pointer"
+                  aria-label="Zoom"
+                />
+                <span className="material-symbols-outlined text-on-surface-variant dark:text-zinc-400 text-[20px]">photo_size_select_large</span>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCropModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-outline-variant dark:border-zinc-700 font-label-lg text-on-surface dark:text-zinc-200 hover:bg-surface-container dark:hover:bg-zinc-800 active:scale-95 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (croppedAreaPixels) {
+                      const cropped = await getCroppedImg(cropSrc, croppedAreaPixels);
+                      setImagePreview(cropped);
+                    }
+                    setShowCropModal(false);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-primary text-on-primary font-label-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md"
+                >
+                  Use Photo
                 </button>
               </div>
             </div>
