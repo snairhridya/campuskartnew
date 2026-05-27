@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 interface OrderItem {
   title: string;
   price: number;
+  image?: string;
 }
 
 interface Order {
@@ -16,7 +17,6 @@ interface Order {
   status: "Completed" | "Pending Pickup" | "Cancelled";
   total: number;
   items: OrderItem[];
-  image: string;
 }
 
 
@@ -57,7 +57,6 @@ export default function OrdersPage() {
             status: o.status as Order["status"],
             total: o.total,
             items: o.items || [],
-            image: o.items?.[0]?.image || "/images/macbook.jpg",
           })));
         }
       });
@@ -171,26 +170,22 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Order Items */}
-                <div className="flex gap-4 mb-4 flex-wrap">
-                  <div className="w-20 h-20 bg-surface-container rounded-lg overflow-hidden flex-shrink-0">
-                    <img
-                      src={order.image}
-                      alt={order.items[0]?.title ?? "Order item"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    {order.items.map((item, i) => (
-                      <p key={i} className="font-body-md text-on-surface leading-snug">
-                        {item.title}
-                      </p>
-                    ))}
-                    {order.items.length > 1 && (
-                      <p className="font-body-sm text-on-surface-variant mt-0.5">
-                        +{order.items.length - 1} more item{order.items.length > 2 ? "s" : ""}
-                      </p>
-                    )}
-                  </div>
+                <div className="flex flex-col gap-3 mb-4">
+                  {order.items.map((item, i) => (
+                    <div key={i} className="flex gap-3 items-center">
+                      <div className="w-14 h-14 bg-surface-container rounded-lg overflow-hidden flex-shrink-0">
+                        <img
+                          src={item.image || "/images/macbook.jpg"}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center min-w-0">
+                        <p className="font-body-md text-on-surface leading-snug truncate">{item.title}</p>
+                        <p className="font-body-sm text-on-surface-variant">₹{item.price.toFixed(2)}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Order Footer */}

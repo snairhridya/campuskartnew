@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Listing {
   id: number;
@@ -17,65 +17,35 @@ interface Listing {
   isFacultyVerified: boolean;
 }
 
-const MY_LISTINGS: Listing[] = [
-  {
-    id: 1,
-    title: "MacBook Pro (2022) - M2 Chip",
-    price: 899.00,
-    condition: "Mint",
-    category: "Electronics",
-    image: "/images/macbook.jpg",
-    status: "Active",
-    views: 142,
-    postedDate: "May 18, 2025",
-    isFacultyVerified: true,
-  },
-  {
-    id: 2,
-    title: "Calculus: Early Transcendentals",
-    price: 45.00,
-    condition: "Good",
-    category: "Textbooks",
-    image: "/images/textbook.jpg",
-    status: "Sold",
-    views: 87,
-    postedDate: "May 10, 2025",
-    isFacultyVerified: false,
-  },
-  {
-    id: 3,
-    title: "Engineering Graphics Set",
-    price: 129.00,
-    condition: "Like New",
-    category: "Supplies",
-    image: "/images/textbook.jpg",
-    status: "Draft",
-    views: 0,
-    postedDate: "May 22, 2025",
-    isFacultyVerified: false,
-  },
-];
-
 const STATUS_STYLES: Record<Listing["status"], { bg: string; text: string; icon: string }> = {
-  Active: { bg: "bg-secondary-container/30", text: "text-on-secondary-container", icon: "visibility"     },
-  Sold:   { bg: "bg-primary-container/30",   text: "text-on-primary-container",   icon: "check_circle"  },
-  Draft:  { bg: "bg-surface-container",      text: "text-on-surface-variant",     icon: "draft"         },
+  Active: { bg: "bg-secondary-container/30", text: "text-on-secondary-container", icon: "visibility"    },
+  Sold:   { bg: "bg-primary-container/30",   text: "text-on-primary-container",   icon: "check_circle" },
+  Draft:  { bg: "bg-surface-container",      text: "text-on-surface-variant",     icon: "draft"        },
 };
 
 export default function SellPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<"All" | Listing["status"]>("All");
+  const [listings, setListings] = useState<Listing[]>([]);
   const [showNewListingForm, setShowNewListingForm] = useState(false);
 
-  // New listing form state
   const [formData, setFormData] = useState({
     title: "", category: "", price: "", condition: "Good", description: "",
   });
   const [formError, setFormError] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
+      setListings(saved);
+    } catch {
+      setListings([]);
+    }
+  }, []);
+
   const tabs: Array<"All" | Listing["status"]> = ["All", "Active", "Sold", "Draft"];
-  const filtered = filter === "All" ? MY_LISTINGS : MY_LISTINGS.filter((l) => l.status === filter);
+  const filtered = filter === "All" ? listings : listings.filter((l) => l.status === filter);
 
   const handlePost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,20 +105,6 @@ export default function SellPage() {
           </button>
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: "Active",    value: MY_LISTINGS.filter(l => l.status === "Active").length },
-            { label: "Sold",      value: MY_LISTINGS.filter(l => l.status === "Sold").length   },
-            { label: "Total Views", value: MY_LISTINGS.reduce((s, l) => s + l.views, 0)        },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm">
-              <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5 text-center">{stat.label}</span>
-            </div>
-          ))}
-        </div>
-
         {/* Filter Tabs */}
         <div role="tablist" aria-label="Filter listings" className="flex gap-2 overflow-x-auto pb-1 mb-6">
           {tabs.map((tab) => (
@@ -174,7 +130,7 @@ export default function SellPage() {
             <span className="material-symbols-outlined text-[64px] text-outline-variant mb-4" aria-hidden="true">sell</span>
             <h2 className="font-headline-sm text-headline-sm mb-2">No {filter !== "All" ? filter.toLowerCase() : ""} listings</h2>
             <p className="font-body-md text-on-surface-variant mb-6 max-w-xs">
-              You haven't posted any listings yet. Start selling to your campus community!
+              You haven&apos;t posted any listings yet. Start selling to your campus community!
             </p>
             <button
               onClick={() => setShowNewListingForm(true)}
@@ -188,7 +144,7 @@ export default function SellPage() {
         {/* Listing Cards */}
         <div className="flex flex-col gap-4">
           {filtered.map((listing) => {
-            const style = STATUS_STYLES[listing.status];
+            const style = STATUS_STYLES[listing.status] ?? STATUS_STYLES["Draft"];
             return (
               <div
                 key={listing.id}
@@ -213,20 +169,8 @@ export default function SellPage() {
                   </div>
 
                   <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                    <div className="flex items-center gap-3">
-                      <span className="font-headline-sm text-headline-sm text-primary">${listing.price.toFixed(2)}</span>
-                      <span className="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[15px]" aria-hidden="true">visibility</span>
-                        {listing.views} views
-                      </span>
-                    </div>
+                    <span className="font-headline-sm text-headline-sm text-primary">₹{listing.price.toFixed(2)}</span>
                     <div className="flex gap-2">
-                      <button
-                        className="px-3 py-1.5 rounded-full font-label-sm text-label-sm border border-outline-variant text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all"
-                        onClick={() => alert("Edit functionality coming soon!")}
-                      >
-                        Edit
-                      </button>
                       <Link
                         href={`/product/${listing.id}`}
                         className="px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary text-on-primary hover:opacity-90 active:scale-95 transition-all"
@@ -337,7 +281,7 @@ export default function SellPage() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label htmlFor="listing-price" className="font-label-md text-label-md text-on-surface">Price ($) <span className="text-error">*</span></label>
+                    <label htmlFor="listing-price" className="font-label-md text-label-md text-on-surface">Price (₹) <span className="text-error">*</span></label>
                     <input
                       id="listing-price"
                       type="number"

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/lib/supabase";
+
 
 const PROFILE = {
   name: "Campus Member",
@@ -12,7 +12,6 @@ const PROFILE = {
   campus: "Campus Member",
   joined: "2024",
   avatar: null,
-  stats: { bought: 0, sold: 0, rating: 5.0 },
   isFacultyVerified: false,
 };
 
@@ -21,7 +20,7 @@ const MENU_SECTIONS = [
     title: "Orders & Activity",
     items: [
       { icon: "receipt_long",    label: "Order History",    href: "/orders",  badge: null },
-      { icon: "sell",            label: "My Listings",      href: "/sell",    badge: "4"  },
+      { icon: "sell",            label: "My Listings",      href: "/sell",    badge: null },
       { icon: "favorite",        label: "Saved Items",      href: "/saved",   badge: null },
     ],
   },
@@ -37,9 +36,9 @@ const MENU_SECTIONS = [
   {
     title: "Support",
     items: [
-      { icon: "help",            label: "Help Center",      href: "/support", badge: null },
-      { icon: "shield",          label: "Safety Tips",      href: "/support", badge: null },
-      { icon: "info",            label: "About CampusKart", href: "/support", badge: null },
+      { icon: "help",            label: "Help Center",      href: "/support/help",   badge: null },
+      { icon: "shield",          label: "Safety Tips",      href: "/support/safety", badge: null },
+      { icon: "info",            label: "About CampusKart", href: "/support/about",  badge: null },
     ],
   },
 ];
@@ -56,31 +55,6 @@ export default function ProfilePage() {
     }
   }, [user, loading, router]);
 
-  const [stats, setStats] = useState({ bought: 0, sold: 0 });
-
-  useEffect(() => {
-    const load = async () => {
-      // Sold = listings published from this device
-      let sold = 0;
-      try {
-        const listings = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
-        sold = listings.length;
-      } catch {}
-
-      // Bought = orders confirmed in Supabase (fallback to localStorage IDs count)
-      let bought = 0;
-      try {
-        const orderIds: number[] = JSON.parse(localStorage.getItem("campuskart_my_orders") || "[]");
-        if (orderIds.length > 0) {
-          const { count } = await supabase.from("orders").select("id", { count: "exact", head: true }).in("id", orderIds);
-          bought = count ?? orderIds.length;
-        }
-      } catch {}
-
-      setStats({ bought, sold });
-    };
-    load();
-  }, []);
 
   const handleLogout = async () => {
     if (logoutConfirm) {
@@ -152,27 +126,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Stats Row ── */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            { label: "Bought", value: stats.bought, href: "/orders" },
-            { label: "Sold",   value: stats.sold,   href: "/sell"   },
-            { label: "Rating", value: `${PROFILE.stats.rating}★`,  href: null },
-          ].map((stat) => (
-            stat.href ? (
-              <Link key={stat.label} href={stat.href} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm hover:bg-surface-container active:scale-95 transition-all">
-                <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{stat.label}</span>
-              </Link>
-            ) : (
-              <div key={stat.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm">
-                <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
-                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{stat.label}</span>
-              </div>
-            )
-          ))}
-        </div>
-
         {/* ── Menu Sections ── */}
         <div className="flex flex-col gap-4">
           {MENU_SECTIONS.map((section) => (
@@ -207,7 +160,7 @@ export default function ProfilePage() {
 
         {/* ── Joined Info ── */}
         <p className="font-body-sm text-body-sm text-on-surface-variant text-center mt-6">
-          Member since {PROFILE.joined}
+          Member since {user?.created_at ? new Date(user.created_at).getFullYear() : "—"}
         </p>
 
         {/* ── Logout ── */}
