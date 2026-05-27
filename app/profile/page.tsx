@@ -138,14 +138,21 @@ export default function ProfilePage() {
         {/* ── Stats Row ── */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: "Bought", value: stats.bought },
-            { label: "Sold",   value: stats.sold   },
-            { label: "Rating", value: `${PROFILE.stats.rating}★` },
+            { label: "Bought", value: stats.bought, href: "/orders" },
+            { label: "Sold",   value: stats.sold,   href: "/sell"   },
+            { label: "Rating", value: `${PROFILE.stats.rating}★`,  href: null },
           ].map((stat) => (
-            <div key={stat.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm">
-              <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
-              <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{stat.label}</span>
-            </div>
+            stat.href ? (
+              <Link key={stat.label} href={stat.href} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm hover:bg-surface-container active:scale-95 transition-all">
+                <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{stat.label}</span>
+              </Link>
+            ) : (
+              <div key={stat.label} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-col items-center shadow-sm">
+                <span className="font-headline-sm text-headline-sm text-primary">{stat.value}</span>
+                <span className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">{stat.label}</span>
+              </div>
+            )
           ))}
         </div>
 
