@@ -68,14 +68,18 @@ export default function ProductDetailPage() {
     if (isNaN(priceNum) || priceNum <= 0) return;
     const imageSrc = editImagePreview || product.image;
     const updated = { ...product, title: editForm.title, category: editForm.category, price: priceNum, condition: editForm.condition, description: editForm.description, isFacultyVerified: editForm.isFacultyVerified, image: imageSrc };
-    // Update localStorage
+    // Store as a persistent local override so refresh doesn't revert it
+    try {
+      const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+      edits[product.id] = updated;
+      localStorage.setItem("campuskart_product_edits", JSON.stringify(edits));
+    } catch {}
+    // Also update listings entry if present
     try {
       const saved = localStorage.getItem("campuskart_listings");
       const listings = saved ? JSON.parse(saved) : [];
       const idx = listings.findIndex((l: Product) => l.id === product.id);
-      if (idx !== -1) listings[idx] = { ...listings[idx], ...updated };
-      else listings.unshift(updated);
-      localStorage.setItem("campuskart_listings", JSON.stringify(listings));
+      if (idx !== -1) { listings[idx] = { ...listings[idx], ...updated }; localStorage.setItem("campuskart_listings", JSON.stringify(listings)); }
     } catch {}
     // Update Supabase silently
     supabase.from("products").update({ title: updated.title, category: updated.category, price: updated.price, condition: updated.condition, description: updated.description, image: updated.image, is_faculty_verified: updated.isFacultyVerified }).eq("id", product.id);
@@ -163,6 +167,12 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const id = Number(params.id);
+
+    // 0. Check user-saved local edits first (overrides everything)
+    try {
+      const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+      if (edits[id]) { setProduct(edits[id]); return; }
+    } catch {}
 
     // 1. Check static products
     const staticProduct = PRODUCTS.find((p) => p.id === id);
@@ -581,19 +591,16 @@ export default function ProductDetailPage() {
 
             <form onSubmit={handleEditSubmit} className="p-6 space-y-4 overflow-y-auto">
               {/* Photo */}
-              <div className="space-y-1">
-                <label className="font-label-lg text-label-lg font-bold text-primary">Item Photo</label>
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors bg-surface-container-low overflow-hidden relative">
-                  {editImagePreview || product.image ? (
-                    <img src={editImagePreview || product.image} alt="Preview" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-[40px]">add_photo_alternate</span>
-                      <span className="font-body-sm text-body-sm">Click to change photo</span>
-                    </div>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={handleEditImageChange} />
-                </label>
+              <div className="space-y-2">
+                <span className="font-label-lg text-label-lg font-bold text-primary">Item Photo</span>
+                <div className="relative w-full h-44 rounded-xl overflow-hidden border-2 border-outline-variant bg-surface-container-low group">
+                  <img src={editImagePreview || product.image} alt="Preview" className="w-full h-full object-cover" />
+                  <label className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <span className="material-symbols-outlined text-white text-[40px]" style={{ fontVariationSettings: "'FILL' 1" }}>photo_camera</span>
+                    <span className="text-white font-label-lg text-label-lg font-bold">Change Photo</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleEditImageChange} />
+                  </label>
+                </div>
                 {editImagePreview && (
                   <button type="button" onClick={() => setEditImagePreview("")} className="text-error font-label-sm hover:underline">Remove new photo</button>
                 )}
