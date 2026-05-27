@@ -5,12 +5,25 @@ import { useState, useEffect } from "react";
 import { PRODUCTS, type Product } from "@/app/lib/products";
 import { supabase } from "@/lib/supabase";
 
+interface Review {
+  name: string;
+  initials: string;
+  role: string;
+  rating: number;
+  text: string;
+  date: string;
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [wishlisted, setWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [product, setProduct] = useState<Product | null | undefined>(undefined);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [userReviews, setUserReviews] = useState<Review[]>([]);
+  const [reviewForm, setReviewForm] = useState({ name: "", role: "Student", rating: 5, text: "" });
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   // Check if already wishlisted
   useEffect(() => {
@@ -20,6 +33,36 @@ export default function ProductDetailPage() {
       setWishlisted(list.some((i: { id: number }) => i.id === Number(params.id)));
     } catch {}
   }, [params.id]);
+
+  // Load reviews from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`campuskart_reviews_${params.id}`);
+      setUserReviews(saved ? JSON.parse(saved) : []);
+    } catch {}
+  }, [params.id]);
+
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewForm.name.trim() || !reviewForm.text.trim()) return;
+    const initials = reviewForm.name.trim().split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+    const newReview: Review = {
+      name: reviewForm.name.trim(),
+      initials,
+      role: reviewForm.role,
+      rating: reviewForm.rating,
+      text: reviewForm.text.trim(),
+      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+    };
+    const updated = [newReview, ...userReviews];
+    setUserReviews(updated);
+    try {
+      localStorage.setItem(`campuskart_reviews_${params.id}`, JSON.stringify(updated));
+    } catch {}
+    setReviewForm({ name: "", role: "Student", rating: 5, text: "" });
+    setReviewSubmitted(true);
+    setTimeout(() => setReviewSubmitted(false), 2500);
+  };
 
   const handleWishlist = () => {
     if (!product) return;
@@ -301,49 +344,52 @@ export default function ProductDetailPage() {
           <div className="mt-6 lg:mt-0">
 
             {/* Reviews */}
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">
-                Student Reviews ({product.reviewCount})
-              </h2>
-              <button className="text-secondary font-label-lg text-label-lg hover:underline">
-                View All
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {product.reviews.map((review, i) => (
-                <div key={i} className="p-4 bg-surface-container rounded-xl border border-outline-variant/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
-                      {review.initials}
-                    </div>
-                    <div>
-                      <span className="font-label-md text-label-md text-on-surface block">
-                        {review.name} · {review.role}
-                      </span>
-                      <div className="flex gap-0.5" aria-label={`${review.rating} out of 5 stars`}>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span
-                            key={star}
-                            className="material-symbols-outlined text-secondary"
-                            style={{
-                              fontSize: "12px",
-                              fontVariationSettings: star <= review.rating ? "'FILL' 1" : "'FILL' 0",
-                            }}
-                            aria-hidden="true"
-                          >
-                            star
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+            {(() => {
+              const allReviews = [...userReviews, ...(product.reviews || [])];
+              const preview = allReviews.slice(0, 2);
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-label-lg text-label-lg uppercase tracking-wider text-outline">
+                      Student Reviews ({allReviews.length})
+                    </h2>
+                    <button
+                      onClick={() => setShowReviewsModal(true)}
+                      className="text-secondary font-label-lg text-label-lg hover:underline active:scale-95 transition-all"
+                    >
+                      {allReviews.length === 0 ? "Write a Review" : "View All"}
+                    </button>
                   </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant italic">
-                    &ldquo;{review.text}&rdquo;
-                  </p>
-                </div>
-              ))}
-            </div>
+
+                  <div className="space-y-3">
+                    {preview.length === 0 && (
+                      <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/20 text-center">
+                        <p className="font-body-sm text-body-sm text-on-surface-variant">No reviews yet. Be the first!</p>
+                        <button onClick={() => setShowReviewsModal(true)} className="mt-2 text-secondary font-label-md hover:underline">Write a Review</button>
+                      </div>
+                    )}
+                    {preview.map((review, i) => (
+                      <div key={i} className="p-4 bg-surface-container rounded-xl border border-outline-variant/10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-xs flex-shrink-0">
+                            {review.initials}
+                          </div>
+                          <div>
+                            <span className="font-label-md text-label-md text-on-surface block">{review.name} · {review.role}</span>
+                            <div className="flex gap-0.5">
+                              {[1,2,3,4,5].map((star) => (
+                                <span key={star} className="material-symbols-outlined text-secondary" style={{ fontSize: "12px", fontVariationSettings: star <= review.rating ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="font-body-sm text-body-sm text-on-surface-variant italic">&ldquo;{review.text}&rdquo;</p>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Desktop action buttons */}
             <div className="hidden lg:flex gap-4 mt-6">
@@ -390,6 +436,92 @@ export default function ProductDetailPage() {
           </section>
         )}
       </main>
+
+      {/* Reviews Modal */}
+      {showReviewsModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowReviewsModal(false)} />
+          <div className="relative w-full sm:max-w-lg bg-surface rounded-t-2xl sm:rounded-2xl shadow-2xl border border-outline-variant max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-headline-sm text-on-surface">Reviews ({[...userReviews, ...(product.reviews || [])].length})</h3>
+              <button onClick={() => setShowReviewsModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container transition-colors">close</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+              {/* Write a Review form */}
+              <div className="bg-surface-container-low rounded-xl p-4 border border-outline-variant/30">
+                <h4 className="font-label-lg text-label-lg text-on-surface mb-3">Write a Review</h4>
+                <form onSubmit={handleSubmitReview} className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    required
+                    value={reviewForm.name}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, name: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:ring-2 focus:ring-secondary outline-none"
+                  />
+                  <select
+                    value={reviewForm.role}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, role: e.target.value }))}
+                    className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:ring-2 focus:ring-secondary outline-none"
+                  >
+                    <option>Student</option>
+                    <option>Faculty</option>
+                    <option>Graduate</option>
+                    <option>Undergraduate</option>
+                  </select>
+                  {/* Star Rating */}
+                  <div className="flex items-center gap-1">
+                    <span className="font-body-sm text-on-surface-variant text-sm mr-1">Rating:</span>
+                    {[1,2,3,4,5].map((star) => (
+                      <button key={star} type="button" onClick={() => setReviewForm((f) => ({ ...f, rating: star }))}>
+                        <span className="material-symbols-outlined text-secondary" style={{ fontSize: "24px", fontVariationSettings: star <= reviewForm.rating ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    placeholder="Share your thoughts about this item..."
+                    required
+                    rows={3}
+                    value={reviewForm.text}
+                    onChange={(e) => setReviewForm((f) => ({ ...f, text: e.target.value }))}
+                    className="w-full p-3 rounded-lg border border-outline-variant bg-surface text-on-surface font-body-md text-sm focus:ring-2 focus:ring-secondary outline-none resize-none"
+                  />
+                  <button type="submit" className="w-full bg-primary text-on-primary py-2.5 rounded-xl font-label-lg hover:opacity-90 active:scale-95 transition-all">
+                    {reviewSubmitted ? "✓ Review Submitted!" : "Submit Review"}
+                  </button>
+                </form>
+              </div>
+
+              {/* All reviews list */}
+              {[...userReviews, ...(product.reviews || [])].map((review, i) => (
+                <div key={i} className="p-4 bg-surface-container rounded-xl border border-outline-variant/10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm flex-shrink-0">
+                      {review.initials}
+                    </div>
+                    <div className="flex-1">
+                      <span className="font-label-md text-label-md text-on-surface block">{review.name} · {review.role}</span>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map((star) => (
+                          <span key={star} className="material-symbols-outlined text-secondary" style={{ fontSize: "12px", fontVariationSettings: star <= review.rating ? "'FILL' 1" : "'FILL' 0" }}>star</span>
+                        ))}
+                      </div>
+                    </div>
+                    {"date" in review && <span className="font-body-sm text-body-sm text-on-surface-variant text-xs">{(review as Review).date}</span>}
+                  </div>
+                  <p className="font-body-sm text-body-sm text-on-surface-variant italic">&ldquo;{review.text}&rdquo;</p>
+                </div>
+              ))}
+
+              {[...userReviews, ...(product.reviews || [])].length === 0 && (
+                <p className="text-center font-body-md text-on-surface-variant py-6">No reviews yet. Be the first to review!</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile bottom action bar */}
       <div className="fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant px-4 py-3 flex gap-3 shadow-lg md:hidden z-50">
