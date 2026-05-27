@@ -280,7 +280,7 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen mb-24 md:mb-0">
+    <div className="bg-surface text-on-surface min-h-screen mb-24 lg:mb-0">
 
       {/* Top App Bar */}
       <header className="bg-surface shadow-sm sticky top-0 z-50 flex items-center justify-between w-full px-4 md:px-16 h-16 max-w-[1280px] mx-auto">
@@ -721,7 +721,7 @@ export default function ProductDetailPage() {
       )}
 
       {/* Mobile bottom action bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant px-4 py-3 flex gap-3 shadow-lg md:hidden z-50">
+      <div className="fixed bottom-0 left-0 w-full bg-surface border-t border-outline-variant px-4 py-3 flex gap-3 shadow-lg lg:hidden z-50">
         <button
           onClick={handleAddToCart}
           className="flex-1 bg-surface border-2 border-primary text-primary py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all"
