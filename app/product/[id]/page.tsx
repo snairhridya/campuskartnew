@@ -12,6 +12,37 @@ export default function ProductDetailPage() {
   const [addedToCart, setAddedToCart] = useState(false);
   const [product, setProduct] = useState<Product | null | undefined>(undefined);
 
+  // Check if already wishlisted
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("campuskart_wishlist");
+      const list = saved ? JSON.parse(saved) : [];
+      setWishlisted(list.some((i: { id: number }) => i.id === Number(params.id)));
+    } catch {}
+  }, [params.id]);
+
+  const handleWishlist = () => {
+    if (!product) return;
+    try {
+      const saved = localStorage.getItem("campuskart_wishlist");
+      const list = saved ? JSON.parse(saved) : [];
+      if (wishlisted) {
+        const updated = list.filter((i: { id: number }) => i.id !== product.id);
+        localStorage.setItem("campuskart_wishlist", JSON.stringify(updated));
+      } else {
+        list.unshift({
+          id: product.id, title: product.title, price: product.price,
+          originalPrice: product.originalPrice, condition: product.condition,
+          category: product.category, image: product.image,
+          isFacultyVerified: product.isFacultyVerified, seller: product.seller,
+          savedDate: "Just now",
+        });
+        localStorage.setItem("campuskart_wishlist", JSON.stringify(list));
+      }
+    } catch {}
+    setWishlisted((w) => !w);
+  };
+
   useEffect(() => {
     const id = Number(params.id);
 
@@ -197,7 +228,7 @@ export default function ProductDetailPage() {
                 {product.title}
               </h1>
               <button
-                onClick={() => setWishlisted((w) => !w)}
+                onClick={handleWishlist}
                 className="p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95"
                 aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
               >

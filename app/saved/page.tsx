@@ -17,50 +17,23 @@ interface SavedItem {
   savedDate: string;
 }
 
-const INITIAL_SAVED: SavedItem[] = [
-  {
-    id: 1,
-    title: "MacBook Pro (2022) - M2 Chip",
-    price: 899.00,
-    originalPrice: 1299.00,
-    condition: "Mint",
-    category: "Electronics",
-    image: "/images/macbook.jpg",
-    isFacultyVerified: true,
-    seller: "Prof. Sarah Miller (CS)",
-    savedDate: "2 days ago",
-  },
-  {
-    id: 2,
-    title: "Calculus: Early Transcendentals",
-    price: 45.00,
-    originalPrice: 120.00,
-    condition: "Good",
-    category: "Textbooks",
-    image: "/images/textbook.jpg",
-    isFacultyVerified: false,
-    seller: "James Chen",
-    savedDate: "5 days ago",
-  },
-  {
-    id: 3,
-    title: "Engineering Graphics Set",
-    price: 129.00,
-    condition: "Like New",
-    category: "Supplies",
-    image: "/images/textbook.jpg",
-    isFacultyVerified: true,
-    seller: "Priya Sharma",
-    savedDate: "1 week ago",
-  },
-];
 
 export default function SavedPage() {
   const router = useRouter();
-  const [saved, setSaved] = useState<SavedItem[]>(INITIAL_SAVED);
+  const [saved, setSaved] = useState<SavedItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem("campuskart_wishlist");
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
 
   const removeItem = (id: number) => {
-    setSaved((prev) => prev.filter((item) => item.id !== id));
+    setSaved((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      try { localStorage.setItem("campuskart_wishlist", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
   };
 
   return (
