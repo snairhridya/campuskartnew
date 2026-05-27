@@ -26,7 +26,13 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [products, setProducts] = useState<SimpleProduct[]>([]);
+  const [products, setProducts] = useState<SimpleProduct[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [inputValue, setInputValue] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState("All");
