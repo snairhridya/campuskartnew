@@ -83,7 +83,15 @@ function SearchContent() {
           const local: SimpleProduct[] = saved ? JSON.parse(saved) : [];
           const baseIds = new Set(base.map((p) => String(p.id)));
           const extras = local.filter((l) => !baseIds.has(String(l.id)));
-          setProducts([...extras, ...base]);
+          const merged = [...extras, ...base];
+          const seen = new Set<string>();
+          const deduped = merged.filter((p) => {
+            const key = `${p.title.toLowerCase()}|${p.category}|${p.seller}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          setProducts(deduped);
         } catch {
           setProducts(base);
         }

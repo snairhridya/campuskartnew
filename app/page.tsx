@@ -246,7 +246,16 @@ export default function Home() {
           const local: Product[] = saved ? JSON.parse(saved) : [];
           const baseIds = new Set(base.map((p) => String(p.id)));
           const extras = local.filter((l) => !baseIds.has(String(l.id)));
-          setProducts([...extras, ...base]);
+          // Deduplicate: keep only first product per title+category+seller
+          const merged = [...extras, ...base];
+          const seen = new Set<string>();
+          const deduped = merged.filter((p) => {
+            const key = `${p.title.toLowerCase()}|${p.category}|${p.seller}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          setProducts(deduped);
 
           // Find Supabase products that match local listings by title+seller+category
           // so the delete button shows on the correct cards
