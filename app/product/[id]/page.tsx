@@ -4,6 +4,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { PRODUCTS, type Product } from "@/app/lib/products";
 import { supabase } from "@/lib/supabase";
+import Cropper, { Area } from "react-easy-crop";
+
+const CATEGORIES = ["Textbooks", "Electronics", "Dorm Essentials", "Bikes & Transport", "Clothing"];
 
 interface Review {
   name: string;
@@ -25,6 +28,63 @@ export default function ProductDetailPage() {
   const [reviewForm, setReviewForm] = useState({ name: "", role: "Student", rating: 5, text: "" });
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
+  // Edit listing states
+  const [isMyListing, setIsMyListing] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({ title: "", category: "Textbooks", price: "", condition: "Excellent", description: "", isFacultyVerified: false });
+  const [editImagePreview, setEditImagePreview] = useState<string>("");
+  const [cropSrc, setCropSrc] = useState<string>("");
+  const [showCropModal, setShowCropModal] = useState(false);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [editSaved, setEditSaved] = useState(false);
+
+  const getCroppedImg = (src: string, px: Area): Promise<string> =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = px.width;
+        canvas.height = px.height;
+        canvas.getContext("2d")!.drawImage(img, px.x, px.y, px.width, px.height, 0, 0, px.width, px.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.9));
+      };
+      img.src = src;
+    });
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => { setCropSrc(reader.result as string); setCrop({ x: 0, y: 0 }); setZoom(1); setShowCropModal(true); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product) return;
+    const priceNum = parseFloat(editForm.price);
+    if (isNaN(priceNum) || priceNum <= 0) return;
+    const imageSrc = editImagePreview || product.image;
+    const updated = { ...product, title: editForm.title, category: editForm.category, price: priceNum, condition: editForm.condition, description: editForm.description, isFacultyVerified: editForm.isFacultyVerified, image: imageSrc };
+    // Update localStorage
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      const idx = listings.findIndex((l: Product) => l.id === product.id);
+      if (idx !== -1) listings[idx] = { ...listings[idx], ...updated };
+      else listings.unshift(updated);
+      localStorage.setItem("campuskart_listings", JSON.stringify(listings));
+    } catch {}
+    // Update Supabase silently
+    supabase.from("products").update({ title: updated.title, category: updated.category, price: updated.price, condition: updated.condition, description: updated.description, image: updated.image, is_faculty_verified: updated.isFacultyVerified }).eq("id", product.id);
+    setProduct(updated as Product);
+    setShowEditModal(false);
+    setEditSaved(true);
+    setTimeout(() => setEditSaved(false), 2500);
+  };
+
   // Check if already wishlisted
   useEffect(() => {
     try {
@@ -33,6 +93,32 @@ export default function ProductDetailPage() {
       setWishlisted(list.some((i: { id: number }) => i.id === Number(params.id)));
     } catch {}
   }, [params.id]);
+
+  // Check if this product belongs to the current user
+  useEffect(() => {
+    if (!product) return;
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      const mine = listings.some(
+        (l: Product) =>
+          l.id === product.id ||
+          (l.title.toLowerCase() === product.title.toLowerCase() && l.seller === product.seller)
+      );
+      setIsMyListing(mine);
+      if (mine) {
+        setEditForm({
+          title: product.title,
+          category: product.category,
+          price: String(product.price),
+          condition: product.condition,
+          description: product.description,
+          isFacultyVerified: product.isFacultyVerified,
+        });
+        setEditImagePreview(product.image.startsWith("data:") ? product.image : "");
+      }
+    } catch {}
+  }, [product]);
 
   // Load reviews from localStorage
   useEffect(() => {
@@ -205,6 +291,21 @@ export default function ProductDetailPage() {
           </a>
         </div>
         <div className="flex items-center gap-2">
+          {isMyListing && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all flex items-center gap-1 bg-primary text-on-primary px-3 rounded-full"
+              aria-label="Edit your listing"
+            >
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+              <span className="font-label-md text-label-md hidden sm:inline">Edit</span>
+            </button>
+          )}
+          {editSaved && (
+            <span className="text-secondary font-label-md text-label-md flex items-center gap-1">
+              <span className="material-symbols-outlined text-[18px]">check_circle</span> Saved!
+            </span>
+          )}
           <button
             className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all"
             aria-label="Share this listing"
@@ -436,6 +537,122 @@ export default function ProductDetailPage() {
           </section>
         )}
       </main>
+
+      {/* Crop Modal */}
+      {showCropModal && cropSrc && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80" onClick={() => setShowCropModal(false)} />
+          <div className="relative w-full max-w-md bg-surface rounded-2xl overflow-hidden shadow-2xl border border-outline-variant">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface">Crop & Adjust Photo</h3>
+              <button onClick={() => setShowCropModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container transition-colors">close</button>
+            </div>
+            <div className="relative w-full bg-black" style={{ height: 320 }}>
+              <Cropper image={cropSrc} crop={crop} zoom={zoom} aspect={1} onCropChange={setCrop} onZoomChange={setZoom} onCropComplete={(_, px) => setCroppedAreaPixels(px)} />
+            </div>
+            <div className="px-5 py-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_small</span>
+                <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-primary cursor-pointer" aria-label="Zoom" />
+                <span className="material-symbols-outlined text-on-surface-variant text-[20px]">photo_size_select_large</span>
+              </div>
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowCropModal(false)} className="flex-1 py-3 rounded-xl border border-outline-variant font-label-lg text-on-surface hover:bg-surface-container active:scale-95 transition-all cursor-pointer">Cancel</button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (croppedAreaPixels) {
+                      const cropped = await getCroppedImg(cropSrc, croppedAreaPixels);
+                      setEditImagePreview(cropped);
+                    }
+                    setShowCropModal(false);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-primary text-on-primary font-label-lg hover:opacity-90 active:scale-95 transition-all cursor-pointer shadow-md"
+                >
+                  Use Photo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Listing Modal */}
+      {showEditModal && product && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowEditModal(false)} />
+          <div className="relative w-full max-w-xl bg-surface rounded-2xl overflow-hidden shadow-2xl border border-outline-variant max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+              <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+                Edit Listing
+              </h3>
+              <button onClick={() => setShowEditModal(false)} className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container transition-colors">close</button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4 overflow-y-auto">
+              {/* Photo */}
+              <div className="space-y-1">
+                <label className="font-label-lg text-label-lg font-bold text-primary">Item Photo</label>
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors bg-surface-container-low overflow-hidden relative">
+                  {editImagePreview || product.image ? (
+                    <img src={editImagePreview || product.image} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[40px]">add_photo_alternate</span>
+                      <span className="font-body-sm text-body-sm">Click to change photo</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleEditImageChange} />
+                </label>
+                {editImagePreview && (
+                  <button type="button" onClick={() => setEditImagePreview("")} className="text-error font-label-sm hover:underline">Remove new photo</button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="font-label-lg text-label-lg font-bold text-primary">Title <span className="text-error">*</span></label>
+                  <input type="text" required value={editForm.title} onChange={(e) => setEditForm(f => ({ ...f, title: e.target.value }))} className="w-full h-11 px-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none" />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-label-lg text-label-lg font-bold text-primary">Category</label>
+                  <select value={editForm.category} onChange={(e) => setEditForm(f => ({ ...f, category: e.target.value }))} className="w-full h-11 px-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none">
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="font-label-lg text-label-lg font-bold text-primary">Price ($) <span className="text-error">*</span></label>
+                  <input type="number" step="0.01" min="0.01" required value={editForm.price} onChange={(e) => setEditForm(f => ({ ...f, price: e.target.value }))} className="w-full h-11 px-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none" />
+                </div>
+                <div className="space-y-1">
+                  <label className="font-label-lg text-label-lg font-bold text-primary">Condition</label>
+                  <select value={editForm.condition} onChange={(e) => setEditForm(f => ({ ...f, condition: e.target.value }))} className="w-full h-11 px-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none">
+                    <option value="Mint">Mint (Like New)</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair / Worn</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 pt-4">
+                  <input type="checkbox" id="edit-fac" checked={editForm.isFacultyVerified} onChange={(e) => setEditForm(f => ({ ...f, isFacultyVerified: e.target.checked }))} className="w-5 h-5 rounded" />
+                  <label htmlFor="edit-fac" className="font-body-sm font-semibold text-on-surface cursor-pointer select-none flex items-center gap-1">Faculty Sponsored <span className="material-symbols-outlined text-[16px] text-secondary">verified</span></label>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-label-lg text-label-lg font-bold text-primary">Description <span className="text-error">*</span></label>
+                <textarea required rows={3} value={editForm.description} onChange={(e) => setEditForm(f => ({ ...f, description: e.target.value }))} className="w-full p-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none resize-none" />
+              </div>
+
+              <div className="flex gap-3 pt-2 border-t border-outline-variant">
+                <button type="button" onClick={() => setShowEditModal(false)} className="flex-1 py-3 rounded-xl border border-outline-variant font-label-lg text-on-surface hover:bg-surface-container active:scale-95 transition-all">Cancel</button>
+                <button type="submit" className="flex-1 py-3 rounded-xl bg-primary text-on-primary font-label-lg hover:opacity-90 active:scale-95 transition-all shadow-md">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Reviews Modal */}
       {showReviewsModal && (
