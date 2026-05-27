@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
 
 // Define TypeScript interfaces for our application state
 interface Product {
@@ -128,6 +129,7 @@ const CATEGORIES = ["All", "Textbooks", "Electronics", "Dorm Essentials", "Bikes
 
 export default function Home() {
   const router = useRouter();
+  const { user } = useAuth();
   // Application states
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -268,7 +270,7 @@ export default function Home() {
   };
 
   // Form handle for new listing
-  const handleListSubmit = (e: React.FormEvent) => {
+  const handleListSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newListing.title || !newListing.price || !newListing.description) {
       showToast("Please fill in all required fields.", "info");
@@ -281,12 +283,13 @@ export default function Home() {
       return;
     }
 
-    // Determine an appropriate placeholder image based on category
     let imageSrc = "/images/textbook.jpg";
     if (newListing.category === "Electronics") imageSrc = "/images/ipad.jpg";
     else if (newListing.category === "Dorm Essentials") imageSrc = "/images/lamp.jpg";
     else if (newListing.category === "Bikes & Transport") imageSrc = "/images/bike.jpg";
     else if (newListing.category === "Clothing") imageSrc = "/images/sneakers.jpg";
+
+    const sellerName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Campus Member";
 
     const newlyCreated: Product = {
       id: Date.now(),
@@ -298,14 +301,14 @@ export default function Home() {
       image: imageSrc,
       isFacultyVerified: newListing.isFacultyVerified,
       timeAdded: "Just now",
-      seller: "You (Verified Student)"
+      seller: sellerName,
     };
 
+    // Add to local state immediately so user sees it right away
     setProducts(prev => [newlyCreated, ...prev]);
     setIsListingModalOpen(false);
+    setSelectedCategory("All");
     showToast(`Successfully listed "${newListing.title}"!`);
-    
-    // Reset listing state
     setNewListing({
       title: "",
       category: "Textbooks",
@@ -313,6 +316,38 @@ export default function Home() {
       condition: "Excellent",
       description: "",
       isFacultyVerified: false
+    });
+
+    // Save to Supabase in background — replace local state with real DB data if it works
+    supabase.from("products").insert({
+      title: newlyCreated.title,
+      category: newlyCreated.category,
+      price: newlyCreated.price,
+      condition: newlyCreated.condition,
+      description: newlyCreated.description,
+      image: newlyCreated.image,
+      is_faculty_verified: newlyCreated.isFacultyVerified,
+      time_added: newlyCreated.timeAdded,
+      seller: newlyCreated.seller,
+    }).then(({ error }) => {
+      if (!error) {
+        supabase.from("products").select("*").order("id", { ascending: false }).then(({ data }) => {
+          if (data && data.length > 0) {
+            setProducts(data.map((p) => ({
+              id: p.id,
+              title: p.title,
+              category: p.category,
+              price: p.price,
+              condition: p.condition,
+              description: p.description,
+              image: p.image,
+              isFacultyVerified: p.is_faculty_verified,
+              timeAdded: p.time_added,
+              seller: p.seller,
+            })));
+          }
+        });
+      }
     });
   };
 

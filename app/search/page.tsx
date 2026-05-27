@@ -4,14 +4,29 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PRODUCTS } from "@/app/lib/products";
+import { supabase } from "@/lib/supabase";
 
 const CATEGORIES = ["All", "Textbooks", "Electronics", "Dorm Essentials", "Bikes & Transport", "Clothing"];
 const CONDITIONS = ["Any", "Mint", "Excellent", "Good"];
+
+type SimpleProduct = {
+  id: number;
+  title: string;
+  category: string;
+  price: number;
+  condition: string;
+  description: string;
+  image: string;
+  isFacultyVerified: boolean;
+  timeAdded: string;
+  seller: string;
+};
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const [products, setProducts] = useState<SimpleProduct[]>([]);
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [inputValue, setInputValue] = useState(searchParams.get("q") || "");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -21,6 +36,42 @@ function SearchContent() {
   const [addedId, setAddedId] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("Most Recent");
+
+  useEffect(() => {
+    supabase
+      .from("products")
+      .select("*")
+      .order("id", { ascending: false })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setProducts(data.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            price: p.price,
+            condition: p.condition,
+            description: p.description,
+            image: p.image,
+            isFacultyVerified: p.is_faculty_verified,
+            timeAdded: p.time_added,
+            seller: p.seller,
+          })));
+        } else {
+          setProducts(PRODUCTS.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            price: p.price,
+            condition: p.condition,
+            description: p.description,
+            image: p.image,
+            isFacultyVerified: p.isFacultyVerified,
+            timeAdded: p.timeAdded,
+            seller: p.seller,
+          })));
+        }
+      });
+  }, []);
 
   useEffect(() => {
     const q = searchParams.get("q") || "";
@@ -34,7 +85,7 @@ function SearchContent() {
     router.push(`/search?q=${encodeURIComponent(inputValue)}`);
   };
 
-  const filtered = PRODUCTS.filter((p) => {
+  const filtered = products.filter((p) => {
     const matchesQuery =
       !query ||
       p.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -52,7 +103,7 @@ function SearchContent() {
     return 0;
   });
 
-  const handleAddToCart = (product: typeof PRODUCTS[0]) => {
+  const handleAddToCart = (product: SimpleProduct) => {
     try {
       const saved = localStorage.getItem("campuskart_cart");
       const cart = saved ? JSON.parse(saved) : [];
