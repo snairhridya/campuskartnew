@@ -1001,40 +1001,40 @@ export default function Home() {
               <span className="font-label-lg text-label-lg text-primary dark:text-secondary-fixed font-bold uppercase tracking-wider">
                 Marketplace
               </span>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/search">
                 Campus Directory
-              </a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              </Link>
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Seller Guidelines
-              </a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              </Link>
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/search">
                 Active Listings
-              </a>
+              </Link>
             </div>
             <div className="flex flex-col gap-2 min-w-[120px]">
               <span className="font-label-lg text-label-lg text-primary dark:text-secondary-fixed font-bold uppercase tracking-wider">
                 Support
               </span>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Trust & Safety
-              </a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              </Link>
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Safe Meetup Map
-              </a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              </Link>
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Contact Support
-              </a>
+              </Link>
             </div>
             <div className="flex flex-col gap-2 min-w-[120px]">
               <span className="font-label-lg text-label-lg text-primary dark:text-secondary-fixed font-bold uppercase tracking-wider">
                 Legal
               </span>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Privacy Policy
-              </a>
-              <a className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="#">
+              </Link>
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
                 Terms of Service
-              </a>
+              </Link>
             </div>
           </div>
         </div>
