@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 const PROFILE = {
   name: "Campus Member",
@@ -28,7 +29,7 @@ const MENU_SECTIONS = [
     title: "Account",
     items: [
       { icon: "person",          label: "Edit Profile",    href: "/account",               badge: null },
-      { icon: "notifications",   label: "Notifications",   href: "/account/notifications", badge: "3"  },
+      { icon: "notifications",   label: "Notifications",   href: "/account/notifications", badge: null },
       { icon: "payments",        label: "Payment Methods", href: "/account/payment",       badge: null },
       { icon: "verified_user",   label: "Verification",    href: "/account/verification",  badge: null },
     ],
@@ -58,11 +59,27 @@ export default function ProfilePage() {
   const [stats, setStats] = useState({ bought: 0, sold: 0 });
 
   useEffect(() => {
-    try {
-      const orderIds: number[] = JSON.parse(localStorage.getItem("campuskart_my_orders") || "[]");
-      const listings: unknown[] = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
-      setStats({ bought: orderIds.length, sold: listings.length });
-    } catch {}
+    const load = async () => {
+      // Sold = listings published from this device
+      let sold = 0;
+      try {
+        const listings = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
+        sold = listings.length;
+      } catch {}
+
+      // Bought = orders confirmed in Supabase (fallback to localStorage IDs count)
+      let bought = 0;
+      try {
+        const orderIds: number[] = JSON.parse(localStorage.getItem("campuskart_my_orders") || "[]");
+        if (orderIds.length > 0) {
+          const { count } = await supabase.from("orders").select("id", { count: "exact", head: true }).in("id", orderIds);
+          bought = count ?? orderIds.length;
+        }
+      } catch {}
+
+      setStats({ bought, sold });
+    };
+    load();
   }, []);
 
   const handleLogout = async () => {
