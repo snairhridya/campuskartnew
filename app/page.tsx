@@ -338,7 +338,10 @@ export default function Home() {
             seen.add(key);
             return true;
           });
-          setProducts(deduped);
+          // Apply any local edits (photo/price/etc changes saved via Edit button)
+          const edits: Record<string, Product> = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+          const withEdits = deduped.map((p) => edits[p.id] ? { ...p, ...edits[p.id] } : p);
+          setProducts(withEdits);
 
           // Find Supabase products that match local listings by title+seller+category
           // so the delete button shows on the correct cards
