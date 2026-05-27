@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 // Define TypeScript interfaces for our application state
 interface Product {
@@ -128,7 +129,7 @@ const CATEGORIES = ["All", "Textbooks", "Electronics", "Dorm Essentials", "Bikes
 export default function Home() {
   const router = useRouter();
   // Application states
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [activeSearch, setActiveSearch] = useState<string>("");
@@ -170,6 +171,29 @@ export default function Home() {
   
   // Ref for horizontal scroll container
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Load products from Supabase
+  useEffect(() => {
+    supabase
+      .from("products")
+      .select("*")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setProducts(data.map((p) => ({
+            id: p.id,
+            title: p.title,
+            category: p.category,
+            price: p.price,
+            condition: p.condition,
+            description: p.description,
+            image: p.image,
+            isFacultyVerified: p.is_faculty_verified,
+            timeAdded: p.time_added,
+            seller: p.seller,
+          })));
+        }
+      });
+  }, []);
 
   // Sync dark class on document element
   useEffect(() => {

@@ -1,14 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-// Sample cart items — replace with real shared cart state later
-const CART_ITEMS = [
-  { id: 1, title: "MacBook Pro (2022) - M2 Chip", qty: 1, price: 899.00, image: "/images/macbook.jpg" },
-  { id: 2, title: "Calculus: Early Transcendentals", qty: 1, price: 45.00, image: "/images/textbook.jpg" },
-];
+import { supabase } from "@/lib/supabase";
 
 const PAYMENT_OPTIONS = [
   { id: "upi",  icon: "account_balance_wallet", label: "UPI",                  desc: "Pay via Google Pay, PhonePe, or BHIM" },
@@ -16,8 +11,34 @@ const PAYMENT_OPTIONS = [
   { id: "cod",  icon: "payments",               label: "Cash on Delivery (COD)", desc: "Pay at campus pickup point" },
 ];
 
+interface CartItem {
+  id: number;
+  title: string;
+  qty: number;
+  price: number;
+  image: string;
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
+
+  // Load cart from localStorage
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("campuskart_cart");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setCartItems(parsed.map((i: { product: { id: number; title: string; price: number; image: string }; quantity: number }) => ({
+          id: i.product.id,
+          title: i.product.title,
+          qty: i.quantity,
+          price: i.product.price,
+          image: i.product.image,
+        })));
+      }
+    } catch {}
+  }, []);
 
   // Form state
   const [form, setForm] = useState({ name: "", phone: "", address: "", pincode: "" });
@@ -26,10 +47,9 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
 
   // Price calculations
-  const subtotal = CART_ITEMS.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const total    = subtotal; // free campus pickup
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const total    = subtotal;
 
-  // Simple validation
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name.trim())    e.name    = "Full name is required";
@@ -45,11 +65,16 @@ export default function CheckoutPage() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // Place order → navigate to confirmation
+  // Place order → save to Supabase → clear cart → navigate to confirmation
   const handlePlaceOrder = async () => {
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1800)); // simulate API call
+    await supabase.from("orders").insert({
+      status: "Pending",
+      total,
+      items: cartItems,
+    });
+    localStorage.removeItem("campuskart_cart");
     router.push("/order-confirmation");
   };
 
@@ -218,7 +243,7 @@ export default function CheckoutPage() {
 
               {/* Cart Items */}
               <div className="space-y-4">
-                {CART_ITEMS.map((item) => (
+                {cartItems.map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <div className="w-20 h-24 rounded-lg bg-surface-container overflow-hidden border border-outline-variant flex-shrink-0">
                       <img src={item.image} alt={item.title} className="w-full h-full object-cover" />

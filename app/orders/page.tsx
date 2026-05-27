@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface OrderItem {
   title: string;
@@ -18,39 +19,6 @@ interface Order {
   image: string;
 }
 
-const ORDERS: Order[] = [
-  {
-    id: "CK-A7X92B",
-    date: "May 20, 2025",
-    status: "Completed",
-    total: 944.00,
-    image: "/images/macbook.jpg",
-    items: [
-      { title: "MacBook Pro (2022) - M2 Chip", price: 899.00 },
-      { title: "Calculus: Early Transcendentals", price: 45.00 },
-    ],
-  },
-  {
-    id: "CK-P3M77K",
-    date: "May 10, 2025",
-    status: "Pending Pickup",
-    total: 129.00,
-    image: "/images/textbook.jpg",
-    items: [
-      { title: "Engineering Graphics Set", price: 129.00 },
-    ],
-  },
-  {
-    id: "CK-Q1Z55R",
-    date: "April 28, 2025",
-    status: "Cancelled",
-    total: 350.00,
-    image: "/images/macbook.jpg",
-    items: [
-      { title: "iPad 9th Gen (Wi-Fi, 64GB)", price: 350.00 },
-    ],
-  },
-];
 
 const STATUS_STYLES: Record<Order["status"], { bg: string; text: string; icon: string }> = {
   Completed:       { bg: "bg-secondary-container/30", text: "text-on-secondary-container", icon: "check_circle" },
@@ -61,10 +29,30 @@ const STATUS_STYLES: Record<Order["status"], { bg: string; text: string; icon: s
 export default function OrdersPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<"All" | Order["status"]>("All");
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) {
+          setOrders(data.map((o) => ({
+            id: `CK-${o.id}`,
+            date: new Date(o.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+            status: o.status as Order["status"],
+            total: o.total,
+            items: o.items || [],
+            image: o.items?.[0]?.image || "/images/macbook.jpg",
+          })));
+        }
+      });
+  }, []);
 
   const tabs: Array<"All" | Order["status"]> = ["All", "Completed", "Pending Pickup", "Cancelled"];
 
-  const filtered = filter === "All" ? ORDERS : ORDERS.filter((o) => o.status === filter);
+  const filtered = filter === "All" ? orders : orders.filter((o) => o.status === filter);
 
   return (
     <div className="bg-surface text-on-surface min-h-screen">
