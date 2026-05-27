@@ -361,52 +361,52 @@ export default function Home() {
       )}
 
       {/* TopNavBar */}
-      <header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-16 h-16 w-full bg-surface/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-surface-variant dark:border-outline-variant shadow-sm transition-colors duration-300">
-        <div className="flex items-center gap-10">
-          <span className="text-xl font-extrabold text-primary dark:text-secondary-fixed cursor-pointer tracking-tight" onClick={handleClearFilters}>
+      <header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-16 h-20 w-full bg-surface/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-surface-variant dark:border-outline-variant shadow-sm transition-colors duration-300">
+        <div className="flex items-center gap-12">
+          <span className="text-2xl font-extrabold text-primary dark:text-secondary-fixed cursor-pointer tracking-tight" onClick={handleClearFilters}>
             CampusKart
           </span>
           <nav className="hidden md:flex items-center gap-10">
             <button
               onClick={() => { setSelectedCategory("All"); setActiveSearch(""); }}
-              className={`text-base font-bold hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 ${selectedCategory === "All" && activeSearch === "" ? "text-primary dark:text-secondary-fixed border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant"}`}
+              className={`text-lg font-bold hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 ${selectedCategory === "All" && activeSearch === "" ? "text-primary dark:text-secondary-fixed border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant"}`}
             >
               Shop
             </button>
             <a
               href="/search"
-              className="text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
+              className="text-lg font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
             >
               Browse Listings
             </a>
             <button
               onClick={() => setIsListingModalOpen(true)}
-              className="text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
+              className="text-lg font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
             >
               Sell
             </button>
             <button
               onClick={() => { setSelectedCategory("All"); setActiveSearch("verified"); }}
-              className={`text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed" : ""}`}
+              className={`text-lg font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1.5 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed" : ""}`}
             >
-              <span className="material-symbols-outlined text-[18px]">verified</span> Faculty Verified
+              <span className="material-symbols-outlined text-[22px]">verified</span> Faculty Verified
             </button>
           </nav>
         </div>
-        
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-5">
           {/* Dark Mode Button */}
-          <button 
-            className="material-symbols-outlined text-primary dark:text-secondary-fixed p-1 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+          <button
+            className="material-symbols-outlined text-[28px] text-primary dark:text-secondary-fixed p-2 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors cursor-pointer"
             onClick={() => setIsDarkMode(prev => !prev)}
             title="Toggle Dark Mode"
           >
             {isDarkMode ? "light_mode" : "dark_mode"}
           </button>
 
-          {/* Cart Icon — opens drawer or navigates to /cart */}
-          <Link href="/cart" className="material-symbols-outlined text-primary dark:text-secondary-fixed p-1 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors relative active:scale-95 cursor-pointer">
-            shopping_cart
+          {/* Cart Icon */}
+          <Link href="/cart" className="relative p-2 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors active:scale-95 cursor-pointer">
+            <span className="material-symbols-outlined text-[28px] text-primary dark:text-secondary-fixed">shopping_cart</span>
             {getCartCount() > 0 && (
               <span className="absolute top-0 right-0 bg-error text-on-error text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-pulse">
                 {getCartCount()}
@@ -414,8 +414,8 @@ export default function Home() {
             )}
           </Link>
           <Link href="/profile" aria-label="My profile">
-            <button className="material-symbols-outlined text-primary dark:text-secondary-fixed p-1 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors">
-              account_circle
+            <button className="p-2 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors">
+              <span className="material-symbols-outlined text-[28px] text-primary dark:text-secondary-fixed">account_circle</span>
             </button>
           </Link>
         </div>
