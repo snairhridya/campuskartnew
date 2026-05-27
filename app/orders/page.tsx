@@ -191,7 +191,7 @@ export default function OrdersPage() {
                 {/* Order Footer */}
                 <div className="flex items-center justify-between border-t border-outline-variant pt-4 flex-wrap gap-3">
                   <p className="font-headline-sm text-headline-sm text-primary">
-                    ${order.total.toFixed(2)}
+                    ₹{order.total.toFixed(2)}
                   </p>
                   <div className="flex gap-2">
                     {order.status === "Completed" && (
