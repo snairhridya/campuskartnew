@@ -6,13 +6,13 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 const PROFILE = {
-  name: "Aditya Kumar",
-  email: "aditya.kumar@iitb.ac.in",
+  name: "Campus Member",
+  email: "",
   campus: "Campus Member",
-  joined: "September 2024",
+  joined: "2024",
   avatar: null,
-  stats: { bought: 7, sold: 4, rating: 4.9 },
-  isFacultyVerified: true,
+  stats: { bought: 0, sold: 0, rating: 5.0 },
+  isFacultyVerified: false,
 };
 
 const MENU_SECTIONS = [
