@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [loginEmail, setLoginEmail]       = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError]       = useState("");
+  const [loginSuccess, setLoginSuccess]   = useState("");
   const [loginLoading, setLoginLoading]   = useState(false);
 
   // Signup form state
@@ -67,7 +68,7 @@ export default function LoginPage() {
     if (error) { setSignupError(error); return; }
     setActiveTab("login");
     setSignupName(""); setSignupEmail(""); setSignupPassword(""); setSignupConfirm(""); setSignupTerms(false);
-    setLoginError("Account created! Please check your email to confirm, then login.");
+    setLoginSuccess("Account created! You can now login.");
   };
 
   return (
@@ -184,6 +185,13 @@ export default function LoginPage() {
                     <p className="text-error font-body-sm text-body-sm flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]" aria-hidden="true">error</span>
                       {loginError}
+                    </p>
+                  )}
+                  {/* Success message (e.g. after signup) */}
+                  {loginSuccess && (
+                    <p className="text-secondary font-body-sm text-body-sm flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[16px]" aria-hidden="true">check_circle</span>
+                      {loginSuccess}
                     </p>
                   )}
 
