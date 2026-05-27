@@ -436,7 +436,11 @@ export default function Home() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setActiveSearch(searchQuery);
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      setActiveSearch("");
+    }
   };
 
   const handleClearFilters = () => {
