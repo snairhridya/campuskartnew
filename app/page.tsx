@@ -167,7 +167,16 @@ export default function Home() {
     description: "",
     isFacultyVerified: false
   });
-  
+  const [imagePreview, setImagePreview] = useState<string>("");
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   // Toasts notifications state
   const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
   
@@ -299,6 +308,7 @@ export default function Home() {
     else if (newListing.category === "Dorm Essentials") imageSrc = "/images/lamp.jpg";
     else if (newListing.category === "Bikes & Transport") imageSrc = "/images/bike.jpg";
     else if (newListing.category === "Clothing") imageSrc = "/images/sneakers.jpg";
+    if (imagePreview) imageSrc = imagePreview;
 
     const sellerName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Campus Member";
 
@@ -337,6 +347,7 @@ export default function Home() {
       description: "",
       isFacultyVerified: false
     });
+    setImagePreview("");
 
     // Save to Supabase in background — replace local state with real DB data if it works
     supabase.from("products").insert({
@@ -1208,6 +1219,29 @@ export default function Home() {
                   className="w-full p-4 rounded-xl border border-surface-variant dark:border-zinc-700 bg-white dark:bg-zinc-950 text-on-surface dark:text-zinc-50 focus:ring-2 focus:ring-secondary font-body-md"
                   placeholder="Mention battery health, textbook edition, safe meetup time preferences..."
                 />
+              </div>
+
+              {/* Image Upload */}
+              <div className="space-y-1">
+                <label className="font-label-lg text-label-lg font-bold text-primary dark:text-zinc-200">
+                  Item Photo <span className="text-on-surface-variant font-normal text-[12px]">(optional)</span>
+                </label>
+                <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-surface-variant dark:border-zinc-700 rounded-xl cursor-pointer hover:border-primary transition-colors bg-surface-container-low dark:bg-zinc-900 overflow-hidden relative">
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-on-surface-variant pointer-events-none">
+                      <span className="material-symbols-outlined text-[40px]">add_photo_alternate</span>
+                      <span className="font-body-sm text-body-sm">Click to upload a photo</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                </label>
+                {imagePreview && (
+                  <button type="button" onClick={() => setImagePreview("")} className="text-error font-label-sm text-label-sm hover:underline">
+                    Remove photo
+                  </button>
+                )}
               </div>
 
               <div className="pt-4 border-t border-surface-variant dark:border-zinc-800 flex gap-4">
