@@ -359,33 +359,33 @@ export default function Home() {
       )}
 
       {/* TopNavBar */}
-      <header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-16 h-16 w-full max-w-[1280px] mx-auto bg-surface/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-surface-variant dark:border-outline-variant shadow-sm transition-colors duration-300">
-        <div className="flex items-center gap-8">
-          <span className="font-headline-sm text-headline-sm font-bold text-primary dark:text-secondary-fixed cursor-pointer tracking-tight" onClick={handleClearFilters}>
+      <header className="sticky top-0 z-50 flex justify-between items-center px-4 md:px-16 h-16 w-full bg-surface/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-surface-variant dark:border-outline-variant shadow-sm transition-colors duration-300">
+        <div className="flex items-center gap-10">
+          <span className="text-xl font-extrabold text-primary dark:text-secondary-fixed cursor-pointer tracking-tight" onClick={handleClearFilters}>
             CampusKart
           </span>
           <nav className="hidden md:flex items-center gap-10">
             <button
               onClick={() => { setSelectedCategory("All"); setActiveSearch(""); }}
-              className={`font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 ${selectedCategory === "All" && activeSearch === "" ? "text-primary dark:text-secondary-fixed font-bold border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant font-medium"}`}
+              className={`text-base font-bold hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 ${selectedCategory === "All" && activeSearch === "" ? "text-primary dark:text-secondary-fixed border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant"}`}
             >
               Shop
             </button>
             <a
               href="/search"
-              className="text-on-surface-variant dark:text-surface-variant font-medium font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
+              className="text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
             >
               Browse Listings
             </a>
-            <button 
+            <button
               onClick={() => setIsListingModalOpen(true)}
-              className="text-on-surface-variant dark:text-surface-variant font-medium font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
+              className="text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200"
             >
               Sell
             </button>
-            <button 
+            <button
               onClick={() => { setSelectedCategory("All"); setActiveSearch("verified"); }}
-              className={`text-on-surface-variant dark:text-surface-variant font-medium font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed font-bold" : ""}`}
+              className={`text-base font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed" : ""}`}
             >
               <span className="material-symbols-outlined text-[18px]">verified</span> Faculty Verified
             </button>
