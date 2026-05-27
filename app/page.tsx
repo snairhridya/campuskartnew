@@ -461,9 +461,14 @@ export default function Home() {
         const updatedListings = listings.map(l => l.id === editingProduct.id ? { ...l, ...updated } : l);
         localStorage.setItem("campuskart_listings", JSON.stringify(updatedListings));
       } catch {}
+      try {
+        const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+        edits[editingProduct.id] = updated;
+        localStorage.setItem("campuskart_product_edits", JSON.stringify(edits));
+      } catch {}
       showToast(`Updated "${updated.title}"!`);
       resetForm();
-      supabase.from("products").update({
+      await supabase.from("products").update({
         title: updated.title,
         category: updated.category,
         price: updated.price,
@@ -505,8 +510,8 @@ export default function Home() {
     showToast(`Successfully listed "${newListing.title}"!`);
     resetForm();
 
-    // Save to Supabase silently — do NOT reload from Supabase so IDs stay consistent
-    supabase.from("products").insert({
+    // Save to Supabase and sync back the real ID so future edits target the right row
+    const { data: inserted } = await supabase.from("products").insert({
       title: newlyCreated.title,
       category: newlyCreated.category,
       price: newlyCreated.price,
@@ -516,7 +521,21 @@ export default function Home() {
       is_faculty_verified: newlyCreated.isFacultyVerified,
       time_added: newlyCreated.timeAdded,
       seller: newlyCreated.seller,
-    });
+    }).select("id").single();
+
+    if (inserted?.id) {
+      const supabaseId = inserted.id;
+      const localId = newlyCreated.id;
+      // Replace Date.now() ID with Supabase auto-increment ID everywhere
+      setProducts(prev => prev.map(p => p.id === localId ? { ...p, id: supabaseId } : p));
+      setMyListingIds(prev => { const n = new Set(prev); n.delete(localId); n.add(supabaseId); return n; });
+      try {
+        const saved = localStorage.getItem("campuskart_listings");
+        const listings = saved ? JSON.parse(saved) : [];
+        const idx = listings.findIndex((l: Product) => l.id === localId);
+        if (idx >= 0) { listings[idx].id = supabaseId; localStorage.setItem("campuskart_listings", JSON.stringify(listings)); }
+      } catch {}
+    }
   };
 
   // Filter products by category and active search term

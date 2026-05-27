@@ -64,21 +64,24 @@ export default function ProductDetailPage() {
     if (isNaN(priceNum) || priceNum <= 0) return;
     const imageSrc = editImagePreview || product.image;
     const updated = { ...product, title: editForm.title, category: editForm.category, price: priceNum, condition: editForm.condition, description: editForm.description, isFacultyVerified: editForm.isFacultyVerified, image: imageSrc };
-    // Store as a persistent local override so refresh doesn't revert it
+    // Push to Supabase first (cross-device sync)
+    await supabase.from("products").update({
+      title: updated.title, category: updated.category, price: updated.price,
+      condition: updated.condition, description: updated.description,
+      image: updated.image, is_faculty_verified: updated.isFacultyVerified,
+    }).eq("id", product.id);
+    // Also keep a local override so this device is never stale
     try {
       const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
       edits[product.id] = updated;
       localStorage.setItem("campuskart_product_edits", JSON.stringify(edits));
     } catch {}
-    // Also update listings entry if present
     try {
       const saved = localStorage.getItem("campuskart_listings");
       const listings = saved ? JSON.parse(saved) : [];
       const idx = listings.findIndex((l: Product) => l.id === product.id);
       if (idx !== -1) { listings[idx] = { ...listings[idx], ...updated }; localStorage.setItem("campuskart_listings", JSON.stringify(listings)); }
     } catch {}
-    // Update Supabase silently
-    supabase.from("products").update({ title: updated.title, category: updated.category, price: updated.price, condition: updated.condition, description: updated.description, image: updated.image, is_faculty_verified: updated.isFacultyVerified }).eq("id", product.id);
     setProduct(updated as Product);
     setShowEditModal(false);
     setEditSaved(true);
@@ -173,37 +176,33 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const id = Number(params.id);
 
-    // 0. Check user-saved local edits first (overrides everything)
+    // Show something immediately (fast path for this device)
+    let immediate: Product | null = null;
     try {
       const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
-      if (edits[id]) { setProduct(edits[id]); return; }
+      if (edits[id]) immediate = edits[id];
     } catch {}
-
-    // 1. Check static products
-    const staticProduct = PRODUCTS.find((p) => p.id === id);
-    if (staticProduct) { setProduct(staticProduct); return; }
-
-    // 2. Check localStorage
-    try {
-      const saved = localStorage.getItem("campuskart_listings");
-      const listings = saved ? JSON.parse(saved) : [];
-      const local = listings.find((p: { id: number }) => p.id === id);
-      if (local) {
-        setProduct({
+    if (!immediate) immediate = PRODUCTS.find((p) => p.id === id) ?? null;
+    if (!immediate) {
+      try {
+        const saved = localStorage.getItem("campuskart_listings");
+        const listings = saved ? JSON.parse(saved) : [];
+        const local = listings.find((p: { id: number }) => p.id === id);
+        if (local) immediate = {
           ...local,
           originalPrice: +(local.price * 1.3).toFixed(2),
           rating: 4.5, reviewCount: 0,
           specs: { Condition: local.condition, Category: local.category, Seller: local.seller },
           reviews: [],
-        } as Product);
-        return;
-      }
-    } catch {}
+        } as Product;
+      } catch {}
+    }
+    if (immediate) setProduct(immediate);
 
-    // 3. Fetch from Supabase
+    // Always fetch from Supabase — this is the cross-device source of truth
     supabase.from("products").select("*").eq("id", id).single().then(({ data }) => {
       if (data) {
-        setProduct({
+        const fresh: Product = {
           id: data.id, title: data.title, category: data.category,
           price: data.price, originalPrice: +(data.price * 1.3).toFixed(2),
           condition: data.condition, description: data.description,
@@ -212,8 +211,13 @@ export default function ProductDetailPage() {
           rating: 4.5, reviewCount: 0,
           specs: { Condition: data.condition, Category: data.category, Seller: data.seller },
           reviews: [],
-        } as Product);
-      } else {
+        };
+        // Apply any local edits on top (this device's overrides take priority)
+        try {
+          const edits = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+          setProduct(edits[id] ? { ...fresh, ...edits[id] } : fresh);
+        } catch { setProduct(fresh); }
+      } else if (!immediate) {
         setProduct(null);
       }
     });
