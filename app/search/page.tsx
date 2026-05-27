@@ -43,8 +43,9 @@ function SearchContent() {
       .select("*")
       .order("id", { ascending: false })
       .then(({ data }) => {
+        let base: SimpleProduct[] = [];
         if (data && data.length > 0) {
-          setProducts(data.map((p) => ({
+          base = data.map((p) => ({
             id: p.id,
             title: p.title,
             category: p.category,
@@ -55,9 +56,9 @@ function SearchContent() {
             isFacultyVerified: p.is_faculty_verified,
             timeAdded: p.time_added,
             seller: p.seller,
-          })));
+          }));
         } else {
-          setProducts(PRODUCTS.map((p) => ({
+          base = PRODUCTS.map((p) => ({
             id: p.id,
             title: p.title,
             category: p.category,
@@ -68,7 +69,17 @@ function SearchContent() {
             isFacultyVerified: p.isFacultyVerified,
             timeAdded: p.timeAdded,
             seller: p.seller,
-          })));
+          }));
+        }
+        // Merge locally published listings
+        try {
+          const saved = localStorage.getItem("campuskart_listings");
+          const local: SimpleProduct[] = saved ? JSON.parse(saved) : [];
+          const baseIds = new Set(base.map((p) => String(p.id)));
+          const extras = local.filter((l) => !baseIds.has(String(l.id)));
+          setProducts([...extras, ...base]);
+        } catch {
+          setProducts(base);
         }
       });
   }, []);

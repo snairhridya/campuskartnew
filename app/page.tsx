@@ -180,8 +180,9 @@ export default function Home() {
       .from("products")
       .select("*")
       .then(({ data }) => {
+        let base: Product[] = [];
         if (data && data.length > 0) {
-          setProducts(data.map((p) => ({
+          base = data.map((p) => ({
             id: p.id,
             title: p.title,
             category: p.category,
@@ -192,9 +193,19 @@ export default function Home() {
             isFacultyVerified: p.is_faculty_verified,
             timeAdded: p.time_added,
             seller: p.seller,
-          })));
+          }));
         } else {
-          setProducts(INITIAL_PRODUCTS);
+          base = INITIAL_PRODUCTS;
+        }
+        // Merge any locally published listings so they show even if Supabase insert failed
+        try {
+          const saved = localStorage.getItem("campuskart_listings");
+          const local: Product[] = saved ? JSON.parse(saved) : [];
+          const baseIds = new Set(base.map((p) => String(p.id)));
+          const extras = local.filter((l) => !baseIds.has(String(l.id)));
+          setProducts([...extras, ...base]);
+        } catch {
+          setProducts(base);
         }
       });
   }, []);
@@ -306,6 +317,15 @@ export default function Home() {
 
     // Add to local state immediately so user sees it right away
     setProducts(prev => [newlyCreated, ...prev]);
+
+    // Save to localStorage so search page and refreshes can see it too
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings: Product[] = saved ? JSON.parse(saved) : [];
+      listings.unshift(newlyCreated);
+      localStorage.setItem("campuskart_listings", JSON.stringify(listings));
+    } catch {}
+
     setIsListingModalOpen(false);
     setSelectedCategory("All");
     showToast(`Successfully listed "${newListing.title}"!`);
