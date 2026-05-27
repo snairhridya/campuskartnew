@@ -2,19 +2,34 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/lib/supabase";
 
 export default function AccountPage() {
   const router = useRouter();
+  const { user } = useAuth();
 
-  // Profile fields
+  // Profile fields — pre-filled from Supabase user
   const [profile, setProfile] = useState({
-    name: "Aditya Kumar",
-    email: "aditya.kumar@iitb.ac.in",
-    phone: "+91 98765 43210",
-    campus: "IIT Bombay",
-    bio: "CS undergrad, selling old textbooks and gadgets.",
+    name: "",
+    email: "",
+    phone: "",
+    campus: "",
+    bio: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name: user.user_metadata?.full_name || "",
+        email: user.email || "",
+        phone: user.user_metadata?.phone || "",
+        campus: user.user_metadata?.campus || "",
+        bio: user.user_metadata?.bio || "",
+      });
+    }
+  }, [user]);
 
   // Password fields
   const [passwords, setPasswords] = useState({ current: "", newPass: "", confirm: "" });
@@ -30,22 +45,32 @@ export default function AccountPage() {
     promotions: false,
   });
 
-  // Profile save
+  // Profile save — updates Supabase user metadata
   const [profileSaved, setProfileSaved] = useState(false);
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    await supabase.auth.updateUser({
+      data: {
+        full_name: profile.name,
+        phone: profile.phone,
+        campus: profile.campus,
+        bio: profile.bio,
+      },
+    });
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2500);
   };
 
-  // Password save
-  const handleChangePassword = (e: React.FormEvent) => {
+  // Password save — updates via Supabase Auth
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassError("");
     setPassSuccess(false);
-    if (!passwords.current) { setPassError("Enter your current password."); return; }
+    if (!passwords.newPass) { setPassError("Enter a new password."); return; }
     if (passwords.newPass.length < 6) { setPassError("New password must be at least 6 characters."); return; }
     if (passwords.newPass !== passwords.confirm) { setPassError("Passwords do not match."); return; }
+    const { error } = await supabase.auth.updateUser({ password: passwords.newPass });
+    if (error) { setPassError(error.message); return; }
     setPassSuccess(true);
     setPasswords({ current: "", newPass: "", confirm: "" });
     setTimeout(() => setPassSuccess(false), 3000);
