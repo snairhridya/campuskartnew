@@ -170,7 +170,7 @@ export default function AccountPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor="acc-email" className="font-label-md text-label-md text-on-surface-variant">Campus Email</label>
+              <label htmlFor="acc-email" className="font-label-md text-label-md text-on-surface-variant">Email</label>
               <input
                 id="acc-email"
                 type="email"
