@@ -35,8 +35,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const newUser = session?.user ?? null;
+      // If a different user just logged in, wipe per-user localStorage data
+      if (newUser) {
+        const prevUserId = localStorage.getItem("campuskart_current_user");
+        if (prevUserId && prevUserId !== newUser.id) {
+          localStorage.removeItem("campuskart_cart");
+          localStorage.removeItem("campuskart_wishlist");
+          localStorage.removeItem("campuskart_my_orders");
+          localStorage.removeItem("campuskart_listings");
+          localStorage.removeItem("campuskart_product_edits");
+        }
+        localStorage.setItem("campuskart_current_user", newUser.id);
+      } else {
+        // Logged out — clear session marker so next login starts fresh
+        localStorage.removeItem("campuskart_current_user");
+        localStorage.removeItem("campuskart_cart");
+        localStorage.removeItem("campuskart_wishlist");
+      }
       setSession(session);
-      setUser(session?.user ?? null);
+      setUser(newUser);
     });
 
     return () => subscription.unsubscribe();
