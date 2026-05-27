@@ -314,11 +314,12 @@ export default function ProductDetailPage() {
 
         {/* Hero Image */}
         <section className="relative">
-          <div className="w-full overflow-hidden bg-surface-container-low" style={{ aspectRatio: "4/3", maxHeight: "600px" }}>
+          <div className="w-full overflow-hidden bg-surface-container-low flex items-center justify-center" style={{ minHeight: "320px", maxHeight: "600px" }}>
             <img
               src={product.image}
               alt={product.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
+              style={{ maxHeight: "600px" }}
             />
           </div>
 
