@@ -58,7 +58,7 @@ export default function ProductDetailPage() {
       }
       localStorage.setItem("campuskart_cart", JSON.stringify(cart));
     } catch {}
-    router.push("/checkout");
+    window.location.href = "/checkout";
   };
 
   return (
@@ -86,6 +86,7 @@ export default function ProductDetailPage() {
             <span className="material-symbols-outlined text-primary" aria-hidden="true">share</span>
           </button>
           <button
+            onClick={() => router.push("/cart")}
             className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all"
             aria-label="View cart"
           >
