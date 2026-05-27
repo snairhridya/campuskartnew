@@ -372,7 +372,7 @@ export default function Home() {
     });
     setImagePreview("");
 
-    // Save to Supabase in background — replace local state with real DB data if it works
+    // Save to Supabase silently — do NOT reload from Supabase so IDs stay consistent
     supabase.from("products").insert({
       title: newlyCreated.title,
       category: newlyCreated.category,
@@ -383,25 +383,6 @@ export default function Home() {
       is_faculty_verified: newlyCreated.isFacultyVerified,
       time_added: newlyCreated.timeAdded,
       seller: newlyCreated.seller,
-    }).then(({ error }) => {
-      if (!error) {
-        supabase.from("products").select("*").order("id", { ascending: false }).then(({ data }) => {
-          if (data && data.length > 0) {
-            setProducts(data.map((p) => ({
-              id: p.id,
-              title: p.title,
-              category: p.category,
-              price: p.price,
-              condition: p.condition,
-              description: p.description,
-              image: p.image,
-              isFacultyVerified: p.is_faculty_verified,
-              timeAdded: p.time_added,
-              seller: p.seller,
-            })));
-          }
-        });
-      }
     });
   };
 

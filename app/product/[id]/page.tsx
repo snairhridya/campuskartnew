@@ -2,7 +2,32 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { PRODUCTS } from "@/app/lib/products";
+import { PRODUCTS, type Product } from "@/app/lib/products";
+
+function findProduct(id: number): Product | undefined {
+  // Check static products first
+  const staticProduct = PRODUCTS.find((p) => p.id === id);
+  if (staticProduct) return staticProduct;
+
+  // Check locally published listings
+  try {
+    const saved = localStorage.getItem("campuskart_listings");
+    const listings = saved ? JSON.parse(saved) : [];
+    const local = listings.find((p: { id: number }) => p.id === id);
+    if (local) {
+      return {
+        ...local,
+        originalPrice: +(local.price * 1.3).toFixed(2),
+        rating: 4.5,
+        reviewCount: 0,
+        specs: { Condition: local.condition, Category: local.category, Seller: local.seller },
+        reviews: [],
+      } as Product;
+    }
+  } catch {}
+
+  return undefined;
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -10,7 +35,7 @@ export default function ProductDetailPage() {
   const [wishlisted, setWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
-  const product = PRODUCTS.find((p) => p.id === Number(params.id));
+  const product = findProduct(Number(params.id));
 
   if (!product) {
     return (
