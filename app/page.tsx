@@ -340,7 +340,7 @@ export default function Home() {
           <span className="font-headline-sm text-headline-sm font-bold text-primary dark:text-secondary-fixed cursor-pointer tracking-tight" onClick={handleClearFilters}>
             CampusKart
           </span>
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-10">
             <button
               onClick={() => { setSelectedCategory("All"); setActiveSearch(""); }}
               className={`font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 ${selectedCategory === "All" && activeSearch === "" ? "text-primary dark:text-secondary-fixed font-bold border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant font-medium"}`}

@@ -95,7 +95,7 @@ export default function SearchPage() {
             <a href="/" className="font-headline-sm text-headline-sm font-bold text-primary" aria-label="CampusKart home">
               CampusKart
             </a>
-            <nav aria-label="Primary navigation" className="hidden md:flex gap-6 items-center">
+            <nav aria-label="Primary navigation" className="hidden md:flex gap-10 items-center">
               <a href="/" className="text-on-surface-variant font-body-md hover:text-primary transition-colors">Shop</a>
               <a href="#" className="text-on-surface-variant font-body-md hover:text-primary transition-colors">Sell</a>
             </nav>

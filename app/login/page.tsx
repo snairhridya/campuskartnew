@@ -85,7 +85,7 @@ export default function LoginPage() {
             <Link href="/" className="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">
               CampusKart
             </Link>
-            <nav className="hidden md:flex gap-6">
+            <nav className="hidden md:flex gap-10">
               {["Textbooks", "Electronics", "Bikes & Transport", "Dorm Essentials"].map((cat) => (
                 <Link key={cat} href="/" className="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-colors">
                   {cat}
