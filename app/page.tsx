@@ -159,6 +159,34 @@ export default function Home() {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
   const [facultyFilter, setFacultyFilter] = useState<boolean>(false);
 
+  // Wishlist IDs from localStorage
+  const [wishlistIds, setWishlistIds] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("campuskart_wishlist");
+      const list = saved ? JSON.parse(saved) : [];
+      return new Set(list.map((i: { id: number }) => i.id));
+    } catch { return new Set(); }
+  });
+
+  const handleToggleWishlist = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const saved = localStorage.getItem("campuskart_wishlist");
+      const list = saved ? JSON.parse(saved) : [];
+      if (wishlistIds.has(product.id)) {
+        const updated = list.filter((i: { id: number }) => i.id !== product.id);
+        localStorage.setItem("campuskart_wishlist", JSON.stringify(updated));
+        setWishlistIds((prev) => { const s = new Set(prev); s.delete(product.id); return s; });
+      } else {
+        list.unshift({ id: product.id, title: product.title, price: product.price, originalPrice: +(product.price * 1.3).toFixed(2), condition: product.condition, category: product.category, image: product.image, isFacultyVerified: product.isFacultyVerified, seller: product.seller, savedDate: "Just now" });
+        localStorage.setItem("campuskart_wishlist", JSON.stringify(list));
+        setWishlistIds((prev) => new Set([...prev, product.id]));
+        showToast(`Saved "${product.title}" to wishlist!`);
+      }
+    } catch {}
+  };
+
   // Track IDs of listings published by this user (stored in localStorage)
   const [myListingIds, setMyListingIds] = useState<Set<number>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -725,6 +753,18 @@ export default function Home() {
                       <span className="absolute bottom-3 right-3 bg-black/60 text-white text-[12px] px-2.5 py-1 rounded-full font-semibold backdrop-blur-sm shadow-sm">
                         {product.condition}
                       </span>
+
+                      {/* Wishlist heart button */}
+                      <button
+                        onClick={(e) => handleToggleWishlist(product, e)}
+                        className="absolute bottom-3 left-3 bg-white/90 p-1.5 rounded-full shadow-md hover:scale-110 active:scale-95 transition-all z-10"
+                        title={wishlistIds.has(product.id) ? "Remove from wishlist" : "Save to wishlist"}
+                      >
+                        <span
+                          className="material-symbols-outlined text-[18px]"
+                          style={{ color: wishlistIds.has(product.id) ? "#ba1a1a" : "#888", fontVariationSettings: wishlistIds.has(product.id) ? "'FILL' 1" : "'FILL' 0" }}
+                        >favorite</span>
+                      </button>
                     </div>
 
                     <div className="p-4 flex flex-col justify-between flex-grow">
