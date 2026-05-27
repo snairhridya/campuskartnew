@@ -288,6 +288,15 @@ export default function ProductDetailPage() {
           <button
             className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all"
             aria-label="Share this listing"
+            onClick={async () => {
+              const url = window.location.href;
+              if (navigator.share) {
+                await navigator.share({ title: product?.title ?? "CampusKart Listing", url });
+              } else {
+                await navigator.clipboard.writeText(url);
+                alert("Link copied to clipboard!");
+              }
+            }}
           >
             <span className="material-symbols-outlined text-primary" aria-hidden="true">share</span>
           </button>
