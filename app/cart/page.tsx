@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -15,31 +15,19 @@ interface CartItem {
   quantity: number;
 }
 
-// --- Sample cart data (replace with real cart state/context later) ---
-const INITIAL_CART: CartItem[] = [
-  {
-    id: 1,
-    title: "MacBook Pro (2022) - M2 Chip",
-    condition: "Mint",
-    price: 899.00,
-    image: "/images/macbook.jpg",
-    isFacultyVerified: true,
-    quantity: 1,
-  },
-  {
-    id: 2,
-    title: "Calculus: Early Transcendentals",
-    condition: "Good",
-    price: 45.00,
-    image: "/images/textbook.jpg",
-    isFacultyVerified: false,
-    quantity: 1,
-  },
-];
-
 export default function CartPage() {
   const router = useRouter();
-  const [cartItems, setCartItems] = useState<CartItem[]>(INITIAL_CART);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("campuskart_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("campuskart_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   // Increase quantity of an item
   const increaseQty = (id: number) => {

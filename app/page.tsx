@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Define TypeScript interfaces for our application state
 interface Product {
@@ -125,6 +126,7 @@ const INITIAL_PRODUCTS: Product[] = [
 const CATEGORIES = ["All", "Textbooks", "Electronics", "Dorm Essentials", "Bikes & Transport", "Clothing"];
 
 export default function Home() {
+  const router = useRouter();
   // Application states
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -136,12 +138,23 @@ export default function Home() {
   const [isListingModalOpen, setIsListingModalOpen] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
-  // Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  
+  // Cart state — load from localStorage so cart page stays in sync
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("campuskart_cart");
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  // Persist cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("campuskart_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  
+
   // New listing form state
   const [newListing, setNewListing] = useState({
     title: "",
@@ -535,12 +548,11 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
-                  <Link
+                  <div
                     key={product.id}
-                    href={`/product/${product.id}`}
                     className="bg-white dark:bg-zinc-900 rounded-2xl border border-surface-variant dark:border-zinc-800 overflow-hidden flex flex-col group cursor-pointer shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300"
                   >
-                    <div className="relative overflow-hidden h-48">
+                    <div className="relative overflow-hidden h-48" onClick={() => router.push(`/product/${product.id}`)}>
                       <img
                         alt={product.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -560,7 +572,7 @@ export default function Home() {
                     </div>
 
                     <div className="p-4 flex flex-col justify-between flex-grow">
-                      <div>
+                      <div onClick={() => router.push(`/product/${product.id}`)}>
                         <div className="flex justify-between items-start gap-2 mb-1">
                           <span className="text-[12px] font-bold tracking-widest text-outline uppercase dark:text-zinc-400">
                             {product.category}
@@ -578,12 +590,12 @@ export default function Home() {
                       </div>
 
                       <div className="flex items-center justify-between mt-4 pt-2 border-t border-surface-variant dark:border-zinc-800">
-                        <span className="font-headline-sm text-headline-sm text-primary dark:text-secondary-fixed">
+                        <span className="font-headline-sm text-headline-sm text-primary dark:text-secondary-fixed" onClick={() => router.push(`/product/${product.id}`)}>
                           ${product.price.toFixed(2)}
                         </span>
-                        
+
                         <button
-                          onClick={(e) => handleAddToCart(product, e)}
+                          onClick={() => handleAddToCart(product)}
                           className="bg-surface-container-highest dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container dark:hover:bg-secondary-fixed dark:hover:text-on-secondary-container text-on-surface dark:text-zinc-200 px-3 py-1.5 rounded-lg font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
@@ -591,7 +603,7 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                  </Link>
+                  </div>
               ))}
             </div>
           )}
@@ -626,15 +638,14 @@ export default function Home() {
             className="flex gap-6 overflow-x-auto hide-scrollbar pb-4 snap-x scroll-smooth"
           >
             {products.slice(0, 6).map((product) => (
-              <Link
+              <div
                 key={`recent-${product.id}`}
-                href={`/product/${product.id}`}
                 className="min-w-[260px] max-w-[260px] snap-start bg-white dark:bg-zinc-900 rounded-2xl border border-surface-variant dark:border-zinc-800 overflow-hidden hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 cursor-pointer"
               >
-                <div className="h-40 relative bg-surface-container overflow-hidden">
-                  <img 
-                    alt={product.title} 
-                    className="w-full h-full object-cover" 
+                <div className="h-40 relative bg-surface-container overflow-hidden" onClick={() => router.push(`/product/${product.id}`)}>
+                  <img
+                    alt={product.title}
+                    className="w-full h-full object-cover"
                     src={product.image}
                   />
                   <span className="absolute top-2.5 right-2.5 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm backdrop-blur-sm">
@@ -642,7 +653,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="p-2 flex flex-col justify-between h-32">
-                  <div>
+                  <div onClick={() => router.push(`/product/${product.id}`)}>
                     <h4 className="font-label-lg text-label-lg font-bold text-on-surface dark:text-zinc-100 truncate">
                       {product.title}
                     </h4>
@@ -651,18 +662,18 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-2 pt-2 border-t border-surface-variant dark:border-zinc-800">
-                    <p className="text-primary dark:text-secondary-fixed font-bold text-body-md">
+                    <p className="text-primary dark:text-secondary-fixed font-bold text-body-md" onClick={() => router.push(`/product/${product.id}`)}>
                       ${product.price.toFixed(2)}
                     </p>
-                    <button 
-                      onClick={(e) => handleAddToCart(product, e)}
+                    <button
+                      onClick={() => handleAddToCart(product)}
                       className="bg-primary/5 dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all cursor-pointer"
                     >
                       + Add
                     </button>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </section>
