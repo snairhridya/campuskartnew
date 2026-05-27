@@ -296,8 +296,7 @@ export default function AccountPage() {
           </div>
           <div className="px-5 py-4 flex flex-col gap-3">
             {[
-              { icon: "account_balance", label: "UPI — aditya@okicici",      badge: "Default" },
-              { icon: "credit_card",     label: "Visa •••• 4242",            badge: null      },
+              { icon: "account_balance", label: "UPI — No payment method added", badge: null },
             ].map((method) => (
               <div key={method.label} className="flex items-center gap-3 p-3 bg-surface-container rounded-xl">
                 <span className="material-symbols-outlined text-primary" aria-hidden="true">{method.icon}</span>
