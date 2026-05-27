@@ -157,6 +157,7 @@ export default function Home() {
 
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [facultyFilter, setFacultyFilter] = useState<boolean>(false);
 
   // Track IDs of listings published by this user (stored in localStorage)
   const [myListingIds, setMyListingIds] = useState<Set<number>>(() => {
@@ -427,11 +428,12 @@ export default function Home() {
   // Filter products by category and active search term
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    const matchesSearch = activeSearch === "" || 
+    const matchesSearch = activeSearch === "" ||
       product.title.toLowerCase().includes(activeSearch.toLowerCase()) ||
       product.description.toLowerCase().includes(activeSearch.toLowerCase()) ||
       product.category.toLowerCase().includes(activeSearch.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesFaculty = !facultyFilter || product.isFacultyVerified;
+    return matchesCategory && matchesSearch && matchesFaculty;
   });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -447,6 +449,7 @@ export default function Home() {
     setSelectedCategory("All");
     setSearchQuery("");
     setActiveSearch("");
+    setFacultyFilter(false);
   };
 
   const triggerScroll = (direction: "left" | "right") => {
@@ -498,8 +501,8 @@ export default function Home() {
               Sell
             </button>
             <button
-              onClick={() => { setSelectedCategory("All"); setActiveSearch("verified"); }}
-              className={`text-lg font-bold text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1.5 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed" : ""}`}
+              onClick={() => { setSelectedCategory("All"); setActiveSearch(""); setFacultyFilter(f => !f); }}
+              className={`text-lg font-bold transition-colors duration-200 flex items-center gap-1.5 ${facultyFilter ? "text-secondary dark:text-secondary-fixed border-b-2 border-secondary" : "text-on-surface-variant dark:text-surface-variant hover:text-secondary dark:hover:text-secondary-fixed"}`}
             >
               <span className="material-symbols-outlined text-[22px]">verified</span> Faculty Verified
             </button>
