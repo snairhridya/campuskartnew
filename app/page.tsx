@@ -519,6 +519,11 @@ export default function Home() {
             {isDarkMode ? "light_mode" : "dark_mode"}
           </button>
 
+          {/* Wishlist Icon */}
+          <Link href="/saved" className="p-2 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors active:scale-95 cursor-pointer" aria-label="Saved items">
+            <span className="material-symbols-outlined text-[28px] text-primary dark:text-secondary-fixed">favorite</span>
+          </Link>
+
           {/* Cart Icon */}
           <Link href="/cart" className="relative p-2 rounded-full hover:bg-surface-container dark:hover:bg-zinc-800 transition-colors active:scale-95 cursor-pointer">
             <span className="material-symbols-outlined text-[28px] text-primary dark:text-secondary-fixed">shopping_cart</span>
