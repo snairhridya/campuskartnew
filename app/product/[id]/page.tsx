@@ -46,6 +46,21 @@ export default function ProductDetailPage() {
     setTimeout(() => setAddedToCart(false), 2000);
   };
 
+  const handleBuyNow = () => {
+    try {
+      const saved = localStorage.getItem("campuskart_cart");
+      const cart = saved ? JSON.parse(saved) : [];
+      const existing = cart.find((i: { product: { id: number } }) => i.product?.id === product.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ product, quantity: 1 });
+      }
+      localStorage.setItem("campuskart_cart", JSON.stringify(cart));
+    } catch {}
+    router.push("/checkout");
+  };
+
   return (
     <div className="bg-surface text-on-surface min-h-screen mb-24 md:mb-0">
 
@@ -254,7 +269,7 @@ export default function ProductDetailPage() {
               >
                 {addedToCart ? "✓ ADDED!" : "ADD TO CART"}
               </button>
-              <button className="flex-1 bg-primary text-on-primary py-4 px-6 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all">
+              <button onClick={handleBuyNow} className="flex-1 bg-primary text-on-primary py-4 px-6 rounded-full font-label-lg text-label-lg hover:opacity-90 active:scale-95 transition-all">
                 BUY NOW
               </button>
             </div>
@@ -300,7 +315,7 @@ export default function ProductDetailPage() {
         >
           {addedToCart ? "✓ ADDED!" : "ADD TO CART"}
         </button>
-        <button className="flex-1 bg-primary text-on-primary py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all">
+        <button onClick={handleBuyNow} className="flex-1 bg-primary text-on-primary py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all">
           BUY NOW
         </button>
       </div>
