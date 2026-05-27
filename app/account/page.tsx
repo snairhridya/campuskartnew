@@ -80,6 +80,30 @@ export default function AccountPage() {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Avatar upload
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  useEffect(() => {
+    if (user?.user_metadata?.avatar_url) {
+      setAvatarUrl(user.user_metadata.avatar_url);
+    }
+  }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setAvatarUploading(true);
+    const filePath = `${user.id}/avatar.${file.name.split(".").pop()}`;
+    const { error: uploadError } = await supabase.storage.from("Avatar").upload(filePath, file, { upsert: true });
+    if (uploadError) { setAvatarUploading(false); return; }
+    const { data } = supabase.storage.from("Avatar").getPublicUrl(filePath);
+    const publicUrl = data.publicUrl;
+    await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+    setAvatarUrl(publicUrl);
+    setAvatarUploading(false);
+  };
+
   return (
     <div className="bg-surface text-on-surface min-h-screen">
 
@@ -115,6 +139,26 @@ export default function AccountPage() {
             <h2 className="font-label-lg text-label-lg text-on-surface">Edit Profile</h2>
           </div>
           <form onSubmit={handleSaveProfile} className="px-5 py-5 flex flex-col gap-4">
+
+            {/* Avatar Upload */}
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-primary-container flex items-center justify-center border-2 border-outline-variant flex-shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold text-primary">{profile.name.charAt(0) || "?"}</span>
+                )}
+              </div>
+              <div>
+                <label className="cursor-pointer bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-sm flex items-center gap-2 hover:opacity-90 transition-all">
+                  <span className="material-symbols-outlined text-[16px]">upload</span>
+                  {avatarUploading ? "Uploading..." : "Upload Photo"}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={avatarUploading} />
+                </label>
+                <p className="text-xs text-on-surface-variant mt-1">JPG, PNG — max 2MB</p>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-1">
               <label htmlFor="acc-name" className="font-label-md text-label-md text-on-surface-variant">Full Name</label>
               <input

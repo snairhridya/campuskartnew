@@ -84,9 +84,9 @@ export default function ProfilePage() {
 
         {/* ── Avatar + Info Card ── */}
         <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 flex items-center gap-5 shadow-sm mb-6">
-          <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 text-[36px] font-bold text-on-primary-container select-none">
-            {PROFILE.avatar ? (
-              <img src={PROFILE.avatar} alt={user?.user_metadata?.full_name || PROFILE.name} className="w-full h-full object-cover rounded-full" />
+          <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 text-[36px] font-bold text-on-primary-container select-none overflow-hidden">
+            {user?.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt={user?.user_metadata?.full_name || PROFILE.name} className="w-full h-full object-cover" />
             ) : (
               (user?.user_metadata?.full_name || PROFILE.name).charAt(0)
             )}
