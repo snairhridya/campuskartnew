@@ -172,7 +172,7 @@ export default function Home() {
   // Ref for horizontal scroll container
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load products from Supabase
+  // Load products from Supabase, fall back to local data if unavailable
   useEffect(() => {
     supabase
       .from("products")
@@ -191,6 +191,8 @@ export default function Home() {
             timeAdded: p.time_added,
             seller: p.seller,
           })));
+        } else {
+          setProducts(INITIAL_PRODUCTS);
         }
       });
   }, []);

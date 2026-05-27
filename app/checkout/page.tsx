@@ -70,7 +70,7 @@ export default function CheckoutPage() {
     if (!validate()) return;
     setLoading(true);
     await supabase.from("orders").insert({
-      status: "Pending",
+      status: "Pending Pickup",
       total,
       items: cartItems,
     });

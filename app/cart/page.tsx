@@ -21,12 +21,23 @@ export default function CartPage() {
     if (typeof window === "undefined") return [];
     try {
       const saved = localStorage.getItem("campuskart_cart");
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return parsed.map((i: { product?: CartItem; id?: number; title?: string; condition?: string; price?: number; image?: string; isFacultyVerified?: boolean; quantity: number }) => ({
+        id: i.product?.id ?? i.id ?? 0,
+        title: i.product?.title ?? i.title ?? "",
+        condition: i.product?.condition ?? i.condition ?? "",
+        price: i.product?.price ?? i.price ?? 0,
+        image: i.product?.image ?? i.image ?? "",
+        isFacultyVerified: i.product?.isFacultyVerified ?? i.isFacultyVerified ?? false,
+        quantity: i.quantity,
+      }));
     } catch { return []; }
   });
 
   useEffect(() => {
-    localStorage.setItem("campuskart_cart", JSON.stringify(cartItems));
+    const nested = cartItems.map((item) => ({ product: item, quantity: item.quantity }));
+    localStorage.setItem("campuskart_cart", JSON.stringify(nested));
   }, [cartItems]);
 
   // Increase quantity of an item

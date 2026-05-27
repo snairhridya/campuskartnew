@@ -133,7 +133,7 @@ export default function OrdersPage() {
 
         <div className="flex flex-col gap-4">
           {filtered.map((order) => {
-            const style = STATUS_STYLES[order.status];
+            const style = STATUS_STYLES[order.status] ?? STATUS_STYLES["Pending Pickup"];
             return (
               <div
                 key={order.id}
@@ -162,7 +162,7 @@ export default function OrdersPage() {
                   <div className="w-20 h-20 bg-surface-container rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={order.image}
-                      alt={order.items[0].title}
+                      alt={order.items[0]?.title ?? "Order item"}
                       className="w-full h-full object-cover"
                     />
                   </div>

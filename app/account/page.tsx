@@ -17,6 +17,8 @@ export default function AccountPage() {
     phone: "",
     campus: "",
     bio: "",
+    upi: "",
+    card: "",
   });
 
   useEffect(() => {
@@ -27,6 +29,8 @@ export default function AccountPage() {
         phone: user.user_metadata?.phone || "",
         campus: user.user_metadata?.campus || "",
         bio: user.user_metadata?.bio || "",
+        upi: user.user_metadata?.upi_id || "",
+        card: user.user_metadata?.card_number || "",
       });
     }
   }, [user]);
@@ -294,25 +298,41 @@ export default function AccountPage() {
             <span className="material-symbols-outlined text-primary" aria-hidden="true">payments</span>
             <h2 className="font-label-lg text-label-lg text-on-surface">Payment Methods</h2>
           </div>
-          <div className="px-5 py-4 flex flex-col gap-3">
-            {[
-              { icon: "account_balance", label: "UPI — No payment method added", badge: null },
-            ].map((method) => (
-              <div key={method.label} className="flex items-center gap-3 p-3 bg-surface-container rounded-xl">
-                <span className="material-symbols-outlined text-primary" aria-hidden="true">{method.icon}</span>
-                <span className="flex-grow font-body-md text-body-md text-on-surface">{method.label}</span>
-                {method.badge && (
-                  <span className="font-label-sm text-label-sm bg-secondary-container/30 text-on-secondary-container px-2 py-0.5 rounded-full">
-                    {method.badge}
-                  </span>
-                )}
-              </div>
-            ))}
-            <button className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container active:scale-95 transition-all">
-              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">add</span>
-              Add Payment Method
+          <form className="px-5 py-5 flex flex-col gap-4" onSubmit={async (e) => {
+            e.preventDefault();
+            await supabase.auth.updateUser({ data: { upi_id: profile.upi, card_number: profile.card } });
+            setProfileSaved(true);
+            setTimeout(() => setProfileSaved(false), 2500);
+          }}>
+            <div className="flex flex-col gap-1">
+              <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px]">account_balance</span> UPI ID
+              </label>
+              <input
+                type="text"
+                placeholder="yourname@okicici"
+                value={profile.upi}
+                onChange={(e) => setProfile({ ...profile, upi: e.target.value })}
+                className="w-full bg-surface-container rounded-xl px-4 py-3 font-body-md text-on-surface border border-outline-variant focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+                <span className="material-symbols-outlined text-[16px]">credit_card</span> Card Number (last 4 digits)
+              </label>
+              <input
+                type="text"
+                maxLength={4}
+                placeholder="4242"
+                value={profile.card}
+                onChange={(e) => setProfile({ ...profile, card: e.target.value })}
+                className="w-full bg-surface-container rounded-xl px-4 py-3 font-body-md text-on-surface border border-outline-variant focus:outline-none focus:border-primary transition-colors"
+              />
+            </div>
+            <button type="submit" className="w-full bg-primary text-on-primary py-3 rounded-xl font-label-lg hover:opacity-90 transition-all">
+              Save Payment Info
             </button>
-          </div>
+          </form>
         </section>
 
         {/* ── Danger Zone ── */}
