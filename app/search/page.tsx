@@ -228,7 +228,7 @@ function SearchContent() {
 
             {/* Reset */}
             <button
-              onClick={() => { setSelectedCategory("All"); setSelectedCondition("Any"); setFacultyOnly(false); setMinPrice(""); setMaxPrice(""); setQuery(""); setInputValue(""); router.push("/search"); }}
+              onClick={() => { window.location.href = "/search"; }}
               className="w-full py-2 border border-outline-variant rounded-lg text-on-surface-variant font-label-md hover:bg-surface-container transition-colors"
             >
               Reset Filters
@@ -265,7 +265,7 @@ function SearchContent() {
                 <h2 className="font-headline-sm text-headline-sm mb-2">No results found</h2>
                 <p className="font-body-md text-on-surface-variant mb-6 max-w-xs">Try a different search term or clear the filters.</p>
                 <button
-                  onClick={() => { setSelectedCategory("All"); setSelectedCondition("Any"); setFacultyOnly(false); setMinPrice(""); setMaxPrice(""); setQuery(""); setInputValue(""); router.push("/search"); }}
+                  onClick={() => { window.location.href = "/search"; }}
                   className="bg-primary text-on-primary px-6 py-3 rounded-full font-label-lg hover:opacity-90 active:scale-95 transition-all"
                 >
                   Clear Filters
