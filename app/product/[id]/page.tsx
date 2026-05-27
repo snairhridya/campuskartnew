@@ -94,30 +94,19 @@ export default function ProductDetailPage() {
     } catch {}
   }, [params.id]);
 
-  // Check if this product belongs to the current user
+  // Pre-fill edit form whenever product loads
   useEffect(() => {
     if (!product) return;
-    try {
-      const saved = localStorage.getItem("campuskart_listings");
-      const listings = saved ? JSON.parse(saved) : [];
-      const mine = listings.some(
-        (l: Product) =>
-          l.id === product.id ||
-          (l.title.toLowerCase() === product.title.toLowerCase() && l.seller === product.seller)
-      );
-      setIsMyListing(mine);
-      if (mine) {
-        setEditForm({
-          title: product.title,
-          category: product.category,
-          price: String(product.price),
-          condition: product.condition,
-          description: product.description,
-          isFacultyVerified: product.isFacultyVerified,
-        });
-        setEditImagePreview(product.image.startsWith("data:") ? product.image : "");
-      }
-    } catch {}
+    setIsMyListing(true); // allow editing any product
+    setEditForm({
+      title: product.title,
+      category: product.category,
+      price: String(product.price),
+      condition: product.condition,
+      description: product.description,
+      isFacultyVerified: product.isFacultyVerified,
+    });
+    setEditImagePreview(product.image.startsWith("data:") ? product.image : "");
   }, [product]);
 
   // Load reviews from localStorage
