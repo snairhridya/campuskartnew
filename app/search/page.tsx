@@ -91,7 +91,10 @@ function SearchContent() {
             seen.add(key);
             return true;
           });
-          setProducts(deduped);
+          // Apply local edits (photo/price changes from Edit button)
+          const edits: Record<string, SimpleProduct> = JSON.parse(localStorage.getItem("campuskart_product_edits") || "{}");
+          const withEdits = deduped.map((p) => edits[p.id] ? { ...p, ...edits[p.id] } : p);
+          setProducts(withEdits);
         } catch {
           setProducts(base);
         }
