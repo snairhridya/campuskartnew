@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 const PROFILE = {
@@ -45,8 +45,15 @@ const MENU_SECTIONS = [
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
 
   const handleLogout = async () => {
     if (logoutConfirm) {
@@ -57,6 +64,15 @@ export default function ProfilePage() {
       setTimeout(() => setLogoutConfirm(false), 3000);
     }
   };
+
+  // Show nothing while auth is loading or redirecting
+  if (loading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-surface">
+        <span className="material-symbols-outlined animate-spin text-primary text-[48px]">progress_activity</span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface text-on-surface min-h-screen">
