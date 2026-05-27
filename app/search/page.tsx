@@ -18,6 +18,7 @@ function SearchContent() {
   const [selectedCondition, setSelectedCondition] = useState("Any");
   const [facultyOnly, setFacultyOnly] = useState(false);
   const [minPrice, setMinPrice] = useState("");
+  const [addedId, setAddedId] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("Most Recent");
 
@@ -63,6 +64,8 @@ function SearchContent() {
       }
       localStorage.setItem("campuskart_cart", JSON.stringify(cart));
     } catch {}
+    setAddedId(product.id);
+    setTimeout(() => setAddedId(null), 1500);
   };
 
   return (
@@ -310,10 +313,12 @@ function SearchContent() {
                     <div className="mt-3 flex gap-2">
                       <button
                         onClick={() => handleAddToCart(product)}
-                        className="flex-1 py-2 bg-primary text-on-primary rounded-lg font-label-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-1"
+                        className={`flex-1 py-2 rounded-lg font-label-lg active:scale-95 transition-all flex items-center justify-center gap-1 ${addedId === product.id ? "bg-secondary text-on-secondary" : "bg-primary text-on-primary hover:opacity-90"}`}
                       >
-                        <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
-                        Add to Cart
+                        <span className="material-symbols-outlined text-[16px]">
+                          {addedId === product.id ? "check" : "add_shopping_cart"}
+                        </span>
+                        {addedId === product.id ? "Added!" : "Add to Cart"}
                       </button>
                       <Link href={`/product/${product.id}`} className="px-3 py-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors flex items-center justify-center">
                         <span className="material-symbols-outlined text-[18px]">open_in_new</span>
