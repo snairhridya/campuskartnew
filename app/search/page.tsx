@@ -276,54 +276,54 @@ function SearchContent() {
             {/* Product grid */}
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((product) => (
-                <li key={product.id} className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-lg transition-all duration-200">
-                  <Link href={`/product/${product.id}`} className="relative aspect-[4/3] overflow-hidden bg-surface-container block">
+                <li
+                  key={product.id}
+                  className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col group hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                  onClick={() => router.push(`/product/${product.id}`)}
+                >
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden bg-surface-container">
                     <img
                       src={product.image}
                       alt={product.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     {product.isFacultyVerified ? (
-                      <span className="absolute top-2 right-2 bg-secondary text-on-secondary-fixed font-label-md text-[10px] px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+                      <span className="absolute top-2 right-2 bg-secondary text-on-secondary-fixed font-label-md text-[10px] px-2 py-1 rounded-full flex items-center gap-1 shadow-md pointer-events-none">
                         <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                         FACULTY VERIFIED
                       </span>
                     ) : (
-                      <span className="absolute top-2 right-2 bg-primary-container text-on-primary font-label-md text-[10px] px-2 py-1 rounded-full flex items-center gap-1 shadow-md">
+                      <span className="absolute top-2 right-2 bg-primary-container text-on-primary font-label-md text-[10px] px-2 py-1 rounded-full flex items-center gap-1 shadow-md pointer-events-none">
                         <span className="material-symbols-outlined text-[12px]">person</span>
                         STUDENT SELLER
                       </span>
                     )}
-                    <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full font-semibold">
+                    <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[11px] px-2 py-0.5 rounded-full font-semibold pointer-events-none">
                       {product.condition}
                     </span>
-                  </Link>
+                  </div>
 
+                  {/* Info */}
                   <div className="p-4 flex flex-col flex-1">
-                    <Link href={`/product/${product.id}`}>
-                      <h2 className="font-headline-sm text-[17px] leading-snug text-on-surface group-hover:text-primary transition-colors">{product.title}</h2>
-                      <p className="font-body-sm text-on-surface-variant mt-0.5 text-[12px]">{product.category} · {product.seller}</p>
-                      <p className="text-[12px] text-on-surface-variant mt-2 line-clamp-2">{product.description}</p>
-                    </Link>
+                    <h2 className="font-headline-sm text-[17px] leading-snug text-on-surface group-hover:text-primary transition-colors">{product.title}</h2>
+                    <p className="font-body-sm text-on-surface-variant mt-0.5 text-[12px]">{product.category} · {product.seller}</p>
+                    <p className="text-[12px] text-on-surface-variant mt-2 line-clamp-2">{product.description}</p>
 
                     <div className="mt-4 flex items-center justify-between">
                       <span className="font-headline-sm text-headline-sm text-primary">${product.price.toFixed(2)}</span>
                     </div>
 
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={() => handleAddToCart(product)}
-                        className={`flex-1 py-2 rounded-lg font-label-lg active:scale-95 transition-all flex items-center justify-center gap-1 ${addedId === product.id ? "bg-secondary text-on-secondary" : "bg-primary text-on-primary hover:opacity-90"}`}
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          {addedId === product.id ? "check" : "add_shopping_cart"}
-                        </span>
-                        {addedId === product.id ? "Added!" : "Add to Cart"}
-                      </button>
-                      <Link href={`/product/${product.id}`} className="px-3 py-2 border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                      </Link>
-                    </div>
+                    {/* Add to Cart — stops card click from firing */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }}
+                      className={`mt-3 w-full py-2.5 rounded-lg font-label-lg active:scale-95 transition-all flex items-center justify-center gap-2 ${addedId === product.id ? "bg-secondary text-on-secondary" : "bg-primary text-on-primary hover:opacity-90"}`}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">
+                        {addedId === product.id ? "check_circle" : "add_shopping_cart"}
+                      </span>
+                      {addedId === product.id ? "Added to Cart!" : "Add to Cart"}
+                    </button>
                   </div>
                 </li>
               ))}
