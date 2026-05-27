@@ -27,10 +27,10 @@ const MENU_SECTIONS = [
   {
     title: "Account",
     items: [
-      { icon: "person",          label: "Edit Profile",     href: "/account", badge: null },
-      { icon: "notifications",   label: "Notifications",    href: "/account", badge: "3"  },
-      { icon: "payments",        label: "Payment Methods",  href: "/account", badge: null },
-      { icon: "verified_user",   label: "Verification",     href: "/account", badge: null },
+      { icon: "person",          label: "Edit Profile",    href: "/account",               badge: null },
+      { icon: "notifications",   label: "Notifications",   href: "/account/notifications", badge: "3"  },
+      { icon: "payments",        label: "Payment Methods", href: "/account/payment",       badge: null },
+      { icon: "verified_user",   label: "Verification",    href: "/account/verification",  badge: null },
     ],
   },
   {
