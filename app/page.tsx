@@ -213,29 +213,6 @@ export default function Home() {
     setIsListingModalOpen(true);
   };
 
-  const handleDeleteListing = (productId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Find the product being deleted so we can match by title+seller too
-    const target = products.find((p) => p.id === productId);
-    try {
-      const saved = localStorage.getItem("campuskart_listings");
-      const listings: Product[] = saved ? JSON.parse(saved) : [];
-      const updated = listings.filter(
-        (l) =>
-          l.id !== productId &&
-          !(
-            target &&
-            l.title.toLowerCase() === target.title.toLowerCase() &&
-            l.seller === target.seller &&
-            l.category === target.category
-          )
-      );
-      localStorage.setItem("campuskart_listings", JSON.stringify(updated));
-      setMyListingIds(new Set(updated.map((l) => l.id)));
-    } catch {}
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
-    showToast("Listing removed.", "info");
-  };
 
   // New listing form state
   const [newListing, setNewListing] = useState({
@@ -830,13 +807,6 @@ export default function Home() {
                             title="Edit your listing"
                           >
                             <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
-                          </button>
-                          <button
-                            onClick={(e) => handleDeleteListing(product.id, e)}
-                            className="bg-error text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
-                            title="Delete your listing"
-                          >
-                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
                           </button>
                         </div>
                       )}
