@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 const PROFILE = {
   name: "Aditya Kumar",
   email: "aditya.kumar@iitb.ac.in",
-  campus: "IIT Bombay",
+  campus: "Campus Member",
   joined: "September 2024",
   avatar: null,
   stats: { bought: 7, sold: 4, rating: 4.9 },
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             <p className="font-body-sm text-on-surface-variant mt-0.5 truncate">{user?.email || PROFILE.email}</p>
             <div className="flex items-center gap-1 mt-0.5 font-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-[16px]" aria-hidden="true">school</span>
-              <span>{PROFILE.campus}</span>
+              <span>{user?.user_metadata?.campus || PROFILE.campus}</span>
             </div>
           </div>
         </div>
