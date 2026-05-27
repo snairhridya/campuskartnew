@@ -1029,10 +1029,10 @@ export default function Home() {
               <span className="font-label-lg text-label-lg text-primary dark:text-secondary-fixed font-bold uppercase tracking-wider">
                 Legal
               </span>
-              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/legal">
                 Privacy Policy
               </Link>
-              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/support">
+              <Link className="font-body-sm text-body-sm text-on-surface-variant dark:text-zinc-400 hover:text-secondary hover:underline transition-all" href="/legal">
                 Terms of Service
               </Link>
             </div>
