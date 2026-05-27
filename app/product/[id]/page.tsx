@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   // Edit listing states
+  const [isMyListing, setIsMyListing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editForm, setEditForm] = useState({ title: "", category: "Textbooks", price: "", condition: "Excellent", description: "", isFacultyVerified: false });
   const [editImagePreview, setEditImagePreview] = useState<string>("");
@@ -97,9 +98,16 @@ export default function ProductDetailPage() {
     } catch {}
   }, [params.id]);
 
-  // Pre-fill edit form whenever product loads
+  // Pre-fill edit form and check ownership whenever product loads
   useEffect(() => {
     if (!product) return;
+    try {
+      const listings = JSON.parse(localStorage.getItem("campuskart_listings") || "[]");
+      setIsMyListing(listings.some((l: Product) =>
+        l.id === product.id ||
+        (l.title.toLowerCase() === product.title.toLowerCase() && l.seller === product.seller)
+      ));
+    } catch {}
     setEditForm({
       title: product.title,
       category: product.category,
@@ -289,14 +297,16 @@ export default function ProductDetailPage() {
           </a>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all flex items-center gap-1 bg-primary text-on-primary px-3 rounded-full"
-            aria-label="Edit listing"
-          >
-            <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
-            <span className="font-label-md text-label-md hidden sm:inline">Edit</span>
-          </button>
+          {isMyListing && (
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="p-2 rounded-full hover:bg-surface-container-high active:scale-95 transition-all flex items-center gap-1 bg-primary text-on-primary px-3 rounded-full"
+              aria-label="Edit listing"
+            >
+              <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+              <span className="font-label-md text-label-md hidden sm:inline">Edit</span>
+            </button>
+          )}
           {editSaved && (
             <span className="text-secondary font-label-md text-label-md flex items-center gap-1">
               <span className="material-symbols-outlined text-[18px]">check_circle</span> Saved!

@@ -189,6 +189,16 @@ export default function Home() {
   };
 
 
+  // IDs of products published from this device — only these show the Edit button
+  const [myListingIds, setMyListingIds] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      return new Set(listings.map((l: Product) => l.id as number));
+    } catch { return new Set(); }
+  });
+
   const handleEditListing = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProduct(product);
@@ -312,6 +322,19 @@ export default function Home() {
           const withEdits = deduped.map((p) => edits[p.id] ? { ...p, ...edits[p.id] } : p);
           setProducts(withEdits);
 
+          // Track which Supabase IDs correspond to this user's local listings
+          if (local.length > 0) {
+            const matchedIds = new Set<number>();
+            base.forEach((bp) => {
+              const match = local.find(
+                (lp) => lp.title.toLowerCase() === bp.title.toLowerCase() &&
+                  lp.category === bp.category && lp.seller === bp.seller
+              );
+              if (match) matchedIds.add(bp.id);
+            });
+            const localIds = new Set(local.map((l) => l.id as number));
+            setMyListingIds(new Set([...localIds, ...matchedIds]));
+          }
         } catch {
           setProducts(base);
         }
@@ -508,6 +531,7 @@ export default function Home() {
       const localId = newlyCreated.id;
       // Replace Date.now() ID with Supabase auto-increment ID everywhere
       setProducts(prev => prev.map(p => p.id === localId ? { ...p, id: supabaseId } : p));
+      setMyListingIds(prev => { const n = new Set(prev); n.delete(localId); n.add(supabaseId); return n; });
       try {
         const saved = localStorage.getItem("campuskart_listings");
         const listings = saved ? JSON.parse(saved) : [];
@@ -797,15 +821,17 @@ export default function Home() {
                         src={product.image}
                       />
 
-                      <div className="absolute top-2 right-2 flex gap-1 z-10">
-                        <button
-                          onClick={(e) => handleEditListing(product, e)}
-                          className="bg-primary text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
-                          title="Edit listing"
-                        >
-                          <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
-                        </button>
-                      </div>
+                      {myListingIds.has(product.id) && (
+                        <div className="absolute top-2 right-2 flex gap-1 z-10">
+                          <button
+                            onClick={(e) => handleEditListing(product, e)}
+                            className="bg-primary text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                            title="Edit listing"
+                          >
+                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+                          </button>
+                        </div>
+                      )}
 
                       {product.isFacultyVerified && (
                         <div className="absolute top-4 left-4 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-sm backdrop-blur-sm">
