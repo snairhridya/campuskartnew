@@ -98,7 +98,6 @@ export default function SearchPage() {
             <nav aria-label="Primary navigation" className="hidden md:flex gap-6 items-center">
               <a href="/" className="text-on-surface-variant font-body-md hover:text-primary transition-colors">Shop</a>
               <a href="#" className="text-on-surface-variant font-body-md hover:text-primary transition-colors">Sell</a>
-              <a href="#" className="text-on-surface-variant font-body-md hover:text-primary transition-colors">Community</a>
             </nav>
           </div>
 

@@ -346,9 +346,6 @@ export default function Home() {
             >
               Sell
             </button>
-            <a href="#" className="text-on-surface-variant dark:text-surface-variant font-medium font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200">
-              Community
-            </a>
             <button 
               onClick={() => { setSelectedCategory("All"); setActiveSearch("verified"); }}
               className={`text-on-surface-variant dark:text-surface-variant font-medium font-body-md text-body-md hover:text-secondary dark:hover:text-secondary-fixed transition-colors duration-200 flex items-center gap-1 ${activeSearch === "verified" ? "text-secondary dark:text-secondary-fixed font-bold" : ""}`}
