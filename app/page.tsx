@@ -158,6 +158,29 @@ export default function Home() {
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
+  // Track IDs of listings published by this user (stored in localStorage)
+  const [myListingIds, setMyListingIds] = useState<Set<number>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      return new Set(listings.map((l: Product) => l.id));
+    } catch { return new Set(); }
+  });
+
+  const handleDeleteListing = (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings: Product[] = saved ? JSON.parse(saved) : [];
+      const updated = listings.filter((l) => l.id !== productId);
+      localStorage.setItem("campuskart_listings", JSON.stringify(updated));
+      setMyListingIds(new Set(updated.map((l) => l.id)));
+    } catch {}
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    showToast("Listing removed.", "info");
+  };
+
   // New listing form state
   const [newListing, setNewListing] = useState({
     title: "",
@@ -650,6 +673,16 @@ export default function Home() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         src={product.image}
                       />
+
+                      {myListingIds.has(product.id) && (
+                        <button
+                          onClick={(e) => handleDeleteListing(product.id, e)}
+                          className="absolute top-2 right-2 bg-error text-white p-1.5 rounded-full shadow-lg z-10 hover:opacity-90 active:scale-95 transition-all"
+                          title="Delete your listing"
+                        >
+                          <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                        </button>
+                      )}
 
                       {product.isFacultyVerified && (
                         <div className="absolute top-4 left-4 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1 shadow-sm backdrop-blur-sm">
