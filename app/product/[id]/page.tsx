@@ -1,41 +1,68 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PRODUCTS, type Product } from "@/app/lib/products";
-
-function findProduct(id: number): Product | undefined {
-  // Check static products first
-  const staticProduct = PRODUCTS.find((p) => p.id === id);
-  if (staticProduct) return staticProduct;
-
-  // Check locally published listings
-  try {
-    const saved = localStorage.getItem("campuskart_listings");
-    const listings = saved ? JSON.parse(saved) : [];
-    const local = listings.find((p: { id: number }) => p.id === id);
-    if (local) {
-      return {
-        ...local,
-        originalPrice: +(local.price * 1.3).toFixed(2),
-        rating: 4.5,
-        reviewCount: 0,
-        specs: { Condition: local.condition, Category: local.category, Seller: local.seller },
-        reviews: [],
-      } as Product;
-    }
-  } catch {}
-
-  return undefined;
-}
+import { supabase } from "@/lib/supabase";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [wishlisted, setWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [product, setProduct] = useState<Product | null | undefined>(undefined);
 
-  const product = findProduct(Number(params.id));
+  useEffect(() => {
+    const id = Number(params.id);
+
+    // 1. Check static products
+    const staticProduct = PRODUCTS.find((p) => p.id === id);
+    if (staticProduct) { setProduct(staticProduct); return; }
+
+    // 2. Check localStorage
+    try {
+      const saved = localStorage.getItem("campuskart_listings");
+      const listings = saved ? JSON.parse(saved) : [];
+      const local = listings.find((p: { id: number }) => p.id === id);
+      if (local) {
+        setProduct({
+          ...local,
+          originalPrice: +(local.price * 1.3).toFixed(2),
+          rating: 4.5, reviewCount: 0,
+          specs: { Condition: local.condition, Category: local.category, Seller: local.seller },
+          reviews: [],
+        } as Product);
+        return;
+      }
+    } catch {}
+
+    // 3. Fetch from Supabase
+    supabase.from("products").select("*").eq("id", id).single().then(({ data }) => {
+      if (data) {
+        setProduct({
+          id: data.id, title: data.title, category: data.category,
+          price: data.price, originalPrice: +(data.price * 1.3).toFixed(2),
+          condition: data.condition, description: data.description,
+          image: data.image, isFacultyVerified: data.is_faculty_verified,
+          timeAdded: data.time_added, seller: data.seller,
+          rating: 4.5, reviewCount: 0,
+          specs: { Condition: data.condition, Category: data.category, Seller: data.seller },
+          reviews: [],
+        } as Product);
+      } else {
+        setProduct(null);
+      }
+    });
+  }, [params.id]);
+
+  // Loading state
+  if (product === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="material-symbols-outlined animate-spin text-primary text-[48px]">progress_activity</span>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

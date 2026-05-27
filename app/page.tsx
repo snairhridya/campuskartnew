@@ -170,10 +170,21 @@ export default function Home() {
 
   const handleDeleteListing = (productId: number, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Find the product being deleted so we can match by title+seller too
+    const target = products.find((p) => p.id === productId);
     try {
       const saved = localStorage.getItem("campuskart_listings");
       const listings: Product[] = saved ? JSON.parse(saved) : [];
-      const updated = listings.filter((l) => l.id !== productId);
+      const updated = listings.filter(
+        (l) =>
+          l.id !== productId &&
+          !(
+            target &&
+            l.title.toLowerCase() === target.title.toLowerCase() &&
+            l.seller === target.seller &&
+            l.category === target.category
+          )
+      );
       localStorage.setItem("campuskart_listings", JSON.stringify(updated));
       setMyListingIds(new Set(updated.map((l) => l.id)));
     } catch {}
@@ -229,13 +240,31 @@ export default function Home() {
         } else {
           base = INITIAL_PRODUCTS;
         }
-        // Merge any locally published listings so they show even if Supabase insert failed
+        // Merge locally published listings & detect their Supabase IDs
         try {
           const saved = localStorage.getItem("campuskart_listings");
           const local: Product[] = saved ? JSON.parse(saved) : [];
           const baseIds = new Set(base.map((p) => String(p.id)));
           const extras = local.filter((l) => !baseIds.has(String(l.id)));
           setProducts([...extras, ...base]);
+
+          // Find Supabase products that match local listings by title+seller+category
+          // so the delete button shows on the correct cards
+          if (local.length > 0) {
+            const matchedIds = new Set<number>();
+            base.forEach((bp) => {
+              const match = local.find(
+                (lp) =>
+                  lp.title.toLowerCase() === bp.title.toLowerCase() &&
+                  lp.category === bp.category &&
+                  lp.seller === bp.seller
+              );
+              if (match) matchedIds.add(bp.id);
+            });
+            // Also keep original Date.now() IDs from localStorage
+            const localIds = new Set(local.map((l) => l.id));
+            setMyListingIds(new Set([...localIds, ...matchedIds]));
+          }
         } catch {
           setProducts(base);
         }
