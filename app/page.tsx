@@ -197,6 +197,21 @@ export default function Home() {
     } catch { return new Set(); }
   });
 
+  const handleEditListing = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingProduct(product);
+    setNewListing({
+      title: product.title,
+      category: product.category,
+      price: String(product.price),
+      condition: product.condition,
+      description: product.description,
+      isFacultyVerified: product.isFacultyVerified,
+    });
+    setImagePreview(product.image.startsWith("data:") ? product.image : "");
+    setIsListingModalOpen(true);
+  };
+
   const handleDeleteListing = (productId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     // Find the product being deleted so we can match by title+seller too
@@ -231,6 +246,7 @@ export default function Home() {
     isFacultyVerified: false
   });
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -393,12 +409,53 @@ export default function Home() {
       return;
     }
 
-    let imageSrc = "/images/textbook.jpg";
-    if (newListing.category === "Electronics") imageSrc = "/images/ipad.jpg";
-    else if (newListing.category === "Dorm Essentials") imageSrc = "/images/lamp.jpg";
-    else if (newListing.category === "Bikes & Transport") imageSrc = "/images/bike.jpg";
-    else if (newListing.category === "Clothing") imageSrc = "/images/sneakers.jpg";
+    let imageSrc = editingProduct ? editingProduct.image : "/images/textbook.jpg";
+    if (!editingProduct) {
+      if (newListing.category === "Electronics") imageSrc = "/images/ipad.jpg";
+      else if (newListing.category === "Dorm Essentials") imageSrc = "/images/lamp.jpg";
+      else if (newListing.category === "Bikes & Transport") imageSrc = "/images/bike.jpg";
+      else if (newListing.category === "Clothing") imageSrc = "/images/sneakers.jpg";
+    }
     if (imagePreview) imageSrc = imagePreview;
+
+    const resetForm = () => {
+      setNewListing({ title: "", category: "Textbooks", price: "", condition: "Excellent", description: "", isFacultyVerified: false });
+      setImagePreview("");
+      setEditingProduct(null);
+      setIsListingModalOpen(false);
+    };
+
+    if (editingProduct) {
+      const updated: Product = {
+        ...editingProduct,
+        title: newListing.title,
+        category: newListing.category,
+        price: priceNum,
+        condition: newListing.condition,
+        description: newListing.description,
+        isFacultyVerified: newListing.isFacultyVerified,
+        image: imageSrc,
+      };
+      setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p));
+      try {
+        const saved = localStorage.getItem("campuskart_listings");
+        const listings: Product[] = saved ? JSON.parse(saved) : [];
+        const updatedListings = listings.map(l => l.id === editingProduct.id ? { ...l, ...updated } : l);
+        localStorage.setItem("campuskart_listings", JSON.stringify(updatedListings));
+      } catch {}
+      showToast(`Updated "${updated.title}"!`);
+      resetForm();
+      supabase.from("products").update({
+        title: updated.title,
+        category: updated.category,
+        price: updated.price,
+        condition: updated.condition,
+        description: updated.description,
+        image: updated.image,
+        is_faculty_verified: updated.isFacultyVerified,
+      }).eq("id", editingProduct.id);
+      return;
+    }
 
     const sellerName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Campus Member";
 
@@ -426,18 +483,9 @@ export default function Home() {
       localStorage.setItem("campuskart_listings", JSON.stringify(listings));
     } catch {}
 
-    setIsListingModalOpen(false);
     setSelectedCategory("All");
     showToast(`Successfully listed "${newListing.title}"!`);
-    setNewListing({
-      title: "",
-      category: "Textbooks",
-      price: "",
-      condition: "Excellent",
-      description: "",
-      isFacultyVerified: false
-    });
-    setImagePreview("");
+    resetForm();
 
     // Save to Supabase silently — do NOT reload from Supabase so IDs stay consistent
     supabase.from("products").insert({
@@ -734,13 +782,22 @@ export default function Home() {
                       />
 
                       {myListingIds.has(product.id) && (
-                        <button
-                          onClick={(e) => handleDeleteListing(product.id, e)}
-                          className="absolute top-2 right-2 bg-error text-white p-1.5 rounded-full shadow-lg z-10 hover:opacity-90 active:scale-95 transition-all"
-                          title="Delete your listing"
-                        >
-                          <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
-                        </button>
+                        <div className="absolute top-2 right-2 flex gap-1 z-10">
+                          <button
+                            onClick={(e) => handleEditListing(product, e)}
+                            className="bg-primary text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                            title="Edit your listing"
+                          >
+                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>edit</span>
+                          </button>
+                          <button
+                            onClick={(e) => handleDeleteListing(product.id, e)}
+                            className="bg-error text-white p-1.5 rounded-full shadow-lg hover:opacity-90 active:scale-95 transition-all"
+                            title="Delete your listing"
+                          >
+                            <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>delete</span>
+                          </button>
+                        </div>
                       )}
 
                       {product.isFacultyVerified && (
@@ -1210,18 +1267,18 @@ export default function Home() {
       {/* MODAL DIALOG: LIST AN ITEM (FORM VALIDATION) */}
       {isListingModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsListingModalOpen(false)} />
-          
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setIsListingModalOpen(false); setEditingProduct(null); setImagePreview(""); }} />
+
           <div className="relative w-full max-w-xl bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden shadow-2xl border border-surface-variant dark:border-zinc-800 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant dark:border-zinc-800 bg-surface-container/50 dark:bg-zinc-950/50">
               <h3 className="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-zinc-100 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary dark:text-secondary-fixed text-[28px]">
-                  storefront
+                  {editingProduct ? "edit" : "storefront"}
                 </span>
-                List Your Item for Sale
+                {editingProduct ? "Edit Your Listing" : "List Your Item for Sale"}
               </h3>
-              <button 
-                onClick={() => setIsListingModalOpen(false)}
+              <button
+                onClick={() => { setIsListingModalOpen(false); setEditingProduct(null); setImagePreview(""); }}
                 className="material-symbols-outlined p-1 rounded-full hover:bg-surface-container dark:hover:bg-zinc-855 text-on-surface dark:text-zinc-200 transition-colors cursor-pointer"
               >
                 close
@@ -1351,7 +1408,7 @@ export default function Home() {
               <div className="pt-4 border-t border-surface-variant dark:border-zinc-800 flex gap-4">
                 <button
                   type="button"
-                  onClick={() => setIsListingModalOpen(false)}
+                  onClick={() => { setIsListingModalOpen(false); setEditingProduct(null); setImagePreview(""); }}
                   className="flex-1 bg-surface-container hover:bg-surface-container-high dark:bg-zinc-850 dark:hover:bg-zinc-800 text-on-surface dark:text-zinc-200 font-bold py-3 rounded-xl active:scale-95 transition-all font-body-md text-body-md cursor-pointer"
                 >
                   Cancel
@@ -1360,7 +1417,7 @@ export default function Home() {
                   type="submit"
                   className="flex-1 bg-secondary-container hover:bg-secondary-fixed text-on-secondary-container dark:text-on-secondary-fixed font-bold py-3 rounded-xl shadow-lg hover:shadow-xl active:scale-95 transition-all font-body-md text-body-md cursor-pointer"
                 >
-                  Publish Listing
+                  {editingProduct ? "Save Changes" : "Publish Listing"}
                 </button>
               </div>
             </form>
