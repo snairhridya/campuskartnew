@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 // Which tab is active: "login" or "signup"
 type Tab = "login" | "signup";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { signIn, signUp } = useAuth();
 
   // Tab state
   const [activeTab, setActiveTab] = useState<Tab>("login");
@@ -32,18 +34,14 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
-
     if (!loginEmail || !loginPassword) {
       setLoginError("Please enter your email and password.");
       return;
     }
-
     setLoginLoading(true);
-    // Simulate API call (replace with real auth later)
-    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await signIn(loginEmail, loginPassword);
     setLoginLoading(false);
-
-    // Navigate to homepage after login
+    if (error) { setLoginError(error); return; }
     router.push("/");
   };
 
@@ -51,7 +49,6 @@ export default function LoginPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError("");
-
     if (!signupName || !signupEmail || !signupPassword || !signupConfirm) {
       setSignupError("Please fill in all fields.");
       return;
@@ -64,15 +61,13 @@ export default function LoginPage() {
       setSignupError("Please accept the terms to continue.");
       return;
     }
-
     setSignupLoading(true);
-    // Simulate API call (replace with real auth later)
-    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await signUp(signupEmail, signupPassword, signupName);
     setSignupLoading(false);
-
-    // Navigate to login tab after successful signup
+    if (error) { setSignupError(error); return; }
     setActiveTab("login");
     setSignupName(""); setSignupEmail(""); setSignupPassword(""); setSignupConfirm(""); setSignupTerms(false);
+    setLoginError("Account created! Please check your email to confirm, then login.");
   };
 
   return (

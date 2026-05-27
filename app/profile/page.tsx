@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 const PROFILE = {
   name: "Aditya Kumar",
@@ -44,10 +45,12 @@ const MENU_SECTIONS = [
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { user, signOut } = useAuth();
   const [logoutConfirm, setLogoutConfirm] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (logoutConfirm) {
+      await signOut();
       router.push("/login");
     } else {
       setLogoutConfirm(true);
@@ -83,14 +86,14 @@ export default function ProfilePage() {
         <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 flex items-center gap-5 shadow-sm mb-6">
           <div className="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 text-[36px] font-bold text-on-primary-container select-none">
             {PROFILE.avatar ? (
-              <img src={PROFILE.avatar} alt={PROFILE.name} className="w-full h-full object-cover rounded-full" />
+              <img src={PROFILE.avatar} alt={user?.user_metadata?.full_name || PROFILE.name} className="w-full h-full object-cover rounded-full" />
             ) : (
-              PROFILE.name.charAt(0)
+              (user?.user_metadata?.full_name || PROFILE.name).charAt(0)
             )}
           </div>
           <div className="flex-grow min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-headline-sm text-headline-sm text-on-surface">{PROFILE.name}</h1>
+              <h1 className="font-headline-sm text-headline-sm text-on-surface">{user?.user_metadata?.full_name || PROFILE.name}</h1>
               {PROFILE.isFacultyVerified && (
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-on-secondary-container bg-secondary-container/30 px-2 py-0.5 rounded-full">
                   <span className="material-symbols-outlined text-[12px]" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">verified</span>
@@ -98,7 +101,7 @@ export default function ProfilePage() {
                 </span>
               )}
             </div>
-            <p className="font-body-sm text-on-surface-variant mt-0.5 truncate">{PROFILE.email}</p>
+            <p className="font-body-sm text-on-surface-variant mt-0.5 truncate">{user?.email || PROFILE.email}</p>
             <div className="flex items-center gap-1 mt-0.5 font-body-sm text-on-surface-variant">
               <span className="material-symbols-outlined text-[16px]" aria-hidden="true">school</span>
               <span>{PROFILE.campus}</span>
