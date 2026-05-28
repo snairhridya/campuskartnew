@@ -880,13 +880,24 @@ export default function Home() {
                           ${product.price.toFixed(2)}
                         </span>
 
-                        <button
-                          onClick={() => handleAddToCart(product)}
-                          className="bg-surface-container-highest dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container dark:hover:bg-secondary-fixed dark:hover:text-on-secondary-container text-on-surface dark:text-zinc-200 px-3 py-1.5 rounded-lg font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
-                          Add
-                        </button>
+                        {(() => {
+                          const cartItem = cartItems.find(i => i.product.id === product.id);
+                          return cartItem ? (
+                            <div className="flex items-center border border-outline-variant dark:border-zinc-700 rounded-lg overflow-hidden bg-white dark:bg-zinc-800" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => handleUpdateQuantity(product.id, -1)} className="px-2.5 py-1.5 hover:bg-surface-container dark:hover:bg-zinc-700 font-bold text-on-surface dark:text-zinc-300 text-lg leading-none cursor-pointer">−</button>
+                              <span className="px-2.5 font-bold text-sm text-on-surface dark:text-zinc-100">{cartItem.quantity}</span>
+                              <button onClick={() => handleUpdateQuantity(product.id, 1)} className="px-2.5 py-1.5 hover:bg-surface-container dark:hover:bg-zinc-700 font-bold text-on-surface dark:text-zinc-300 text-lg leading-none cursor-pointer">+</button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={(e) => handleAddToCart(product, e)}
+                              className="bg-surface-container-highest dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container dark:hover:bg-secondary-fixed dark:hover:text-on-secondary-container text-on-surface dark:text-zinc-200 px-3 py-1.5 rounded-lg font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-all shadow-sm cursor-pointer"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">add_shopping_cart</span>
+                              Add
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -951,12 +962,23 @@ export default function Home() {
                     <p className="text-primary dark:text-secondary-fixed font-bold text-body-md" onClick={() => router.push(`/product/${product.id}`)}>
                       ${product.price.toFixed(2)}
                     </p>
-                    <button
-                      onClick={() => handleAddToCart(product)}
-                      className="bg-primary/5 dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all cursor-pointer"
-                    >
-                      + Add
-                    </button>
+                    {(() => {
+                      const cartItem = cartItems.find(i => i.product.id === product.id);
+                      return cartItem ? (
+                        <div className="flex items-center border border-outline-variant dark:border-zinc-700 rounded-lg overflow-hidden bg-white dark:bg-zinc-800">
+                          <button onClick={() => handleUpdateQuantity(product.id, -1)} className="px-2 py-1 hover:bg-surface-container dark:hover:bg-zinc-700 font-bold text-on-surface dark:text-zinc-300 text-base leading-none cursor-pointer">−</button>
+                          <span className="px-2 font-bold text-[11px] text-on-surface dark:text-zinc-100">{cartItem.quantity}</span>
+                          <button onClick={() => handleUpdateQuantity(product.id, 1)} className="px-2 py-1 hover:bg-surface-container dark:hover:bg-zinc-700 font-bold text-on-surface dark:text-zinc-300 text-base leading-none cursor-pointer">+</button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className="bg-primary/5 dark:bg-zinc-800 hover:bg-secondary-container hover:text-on-secondary-container px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition-all cursor-pointer"
+                        >
+                          + Add
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
