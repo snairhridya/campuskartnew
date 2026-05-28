@@ -31,12 +31,25 @@ export default function LoginPage() {
   const [signupError, setSignupError]             = useState("");
   const [signupLoading, setSignupLoading]         = useState(false);
 
+  const ADMIN_EMAIL = "admin1234@gmail.com";
+  const ADMIN_PASSWORD = "000000";
+
   // ── Login handler ──────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError("");
     if (!loginEmail || !loginPassword) {
       setLoginError("Please enter your email and password.");
+      return;
+    }
+    // Admin shortcut — no Supabase needed
+    if (loginEmail.trim() === ADMIN_EMAIL) {
+      if (loginPassword !== ADMIN_PASSWORD) {
+        setLoginError("Invalid admin credentials.");
+        return;
+      }
+      localStorage.setItem("campuskart_admin", "true");
+      router.push("/admin");
       return;
     }
     setLoginLoading(true);
@@ -52,6 +65,10 @@ export default function LoginPage() {
     setSignupError("");
     if (!signupName || !signupEmail || !signupPassword || !signupConfirm) {
       setSignupError("Please fill in all fields.");
+      return;
+    }
+    if (signupEmail.trim() === ADMIN_EMAIL) {
+      setSignupError("This email address is not available for registration.");
       return;
     }
     if (signupPassword !== signupConfirm) {
