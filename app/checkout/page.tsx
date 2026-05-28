@@ -264,7 +264,7 @@ export default function CheckoutPage() {
                         <h3 className="font-body-md font-bold text-on-surface line-clamp-2">{item.title}</h3>
                         <p className="font-label-md text-label-md text-on-surface-variant mt-1">Qty: {item.qty}</p>
                       </div>
-                      <p className="font-headline-sm text-headline-sm text-primary">${(item.price * item.qty).toFixed(2)}</p>
+                      <p className="font-headline-sm text-headline-sm text-primary">₹{(item.price * item.qty).toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
@@ -274,17 +274,17 @@ export default function CheckoutPage() {
               <div className="space-y-2 border-t border-outline-variant pt-4">
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="font-body-md">Subtotal</span>
-                  <span className="font-body-md">${subtotal.toFixed(2)}</span>
+                  <span className="font-body-md">₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-on-surface-variant">
                   <span className="font-body-md">Delivery Fee</span>
                   <span className="font-label-md bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded">
-                    Campus Pickup ($0.00)
+                    Campus Pickup (₹0.00)
                   </span>
                 </div>
                 <div className="flex justify-between items-center pt-3 mt-2 border-t border-dashed border-outline-variant">
                   <span className="font-body-lg font-bold text-primary">Total Price</span>
-                  <span className="font-headline-sm text-headline-sm text-primary">${total.toFixed(2)}</span>
+                  <span className="font-headline-sm text-headline-sm text-primary">₹{total.toFixed(2)}</span>
                 </div>
               </div>
 

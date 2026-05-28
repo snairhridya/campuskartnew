@@ -190,7 +190,7 @@ export default function CartPage() {
                     {/* Price + Quantity Controls */}
                     <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
                       <span className="font-headline-sm text-headline-sm text-primary">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₹{(item.price * item.quantity).toFixed(2)}
                       </span>
 
                       {/* Quantity Controls */}
@@ -243,21 +243,21 @@ export default function CartPage() {
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between font-body-md text-body-md text-on-surface-variant">
                     <span>Subtotal ({totalItems} item{totalItems !== 1 ? "s" : ""})</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-body-md text-body-md text-on-secondary-container font-medium">
                     <span>Delivery Fee</span>
                     <span className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-[16px]" aria-hidden="true"
                         style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                      $0.00 (Campus Pickup)
+                      ₹0.00 (Campus Pickup)
                     </span>
                   </div>
                 </div>
 
                 <div className="border-t border-outline-variant pt-3 flex justify-between items-center">
                   <span className="font-label-lg text-label-lg text-on-surface">Total Amount</span>
-                  <span className="font-headline-sm text-headline-sm text-primary">${total.toFixed(2)}</span>
+                  <span className="font-headline-sm text-headline-sm text-primary">₹{total.toFixed(2)}</span>
                 </div>
 
                 <p className="font-body-sm text-body-sm text-on-surface-variant text-center italic">
@@ -286,7 +286,7 @@ export default function CartPage() {
               onClick={handleCheckout}
               className="w-full bg-primary text-on-primary py-4 rounded-xl font-label-lg text-label-lg shadow-lg active:scale-95 transition-all"
             >
-              {`Proceed to Checkout · $${total.toFixed(2)}`}
+              {`Proceed to Checkout · ₹${total.toFixed(2)}`}
             </button>
           </div>
 
