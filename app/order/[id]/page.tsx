@@ -176,7 +176,7 @@ export default function OrderDetailPage() {
                   <p className="font-body-md text-on-surface leading-snug">{item.title}</p>
                   <p className="font-body-sm text-on-surface-variant mt-0.5">Condition: {item.condition}</p>
                 </div>
-                <span className="font-label-lg text-label-lg text-primary flex-shrink-0">₹{item.price?.toFixed(2)}</span>
+                <span className="font-label-lg text-label-lg text-primary flex-shrink-0">${item.price?.toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -188,16 +188,16 @@ export default function OrderDetailPage() {
           <div className="flex flex-col gap-2.5 font-body-md text-body-md text-on-surface-variant">
             <div className="flex justify-between">
               <span>Subtotal ({order.items.length} item{order.items.length !== 1 ? "s" : ""})</span>
-              <span>₹{subtotal.toFixed(2)}</span>
+              <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-on-secondary-container font-medium">
               <span>Delivery Fee</span>
-              <span>₹0.00 (Campus Pickup)</span>
+              <span>$0.00 (Campus Pickup)</span>
             </div>
           </div>
           <div className="border-t border-outline-variant mt-3 pt-3 flex justify-between items-center">
             <span className="font-label-lg text-label-lg text-on-surface">Total Paid</span>
-            <span className="font-headline-sm text-headline-sm text-primary">₹{order.total.toFixed(2)}</span>
+            <span className="font-headline-sm text-headline-sm text-primary">${order.total.toFixed(2)}</span>
           </div>
         </div>
 

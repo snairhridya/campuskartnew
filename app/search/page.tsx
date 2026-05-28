@@ -254,7 +254,7 @@ function SearchContent() {
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
                   className="bg-surface-container border border-outline-variant rounded px-2 py-1 text-body-sm w-full outline-none focus:border-primary transition-colors"
-                  placeholder="Min ₹"
+                  placeholder="Min $"
                 />
                 <input
                   type="number"
@@ -262,7 +262,7 @@ function SearchContent() {
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
                   className="bg-surface-container border border-outline-variant rounded px-2 py-1 text-body-sm w-full outline-none focus:border-primary transition-colors"
-                  placeholder="Max ₹"
+                  placeholder="Max $"
                 />
               </div>
             </fieldset>
@@ -390,7 +390,7 @@ function SearchContent() {
                     <p className="text-[12px] text-on-surface-variant mt-2 line-clamp-2">{product.description}</p>
 
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="font-headline-sm text-headline-sm text-primary">₹{product.price.toFixed(2)}</span>
+                      <span className="font-headline-sm text-headline-sm text-primary">${product.price.toFixed(2)}</span>
                     </div>
 
                     {/* Add to Cart — stops card click from firing */}

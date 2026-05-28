@@ -169,7 +169,7 @@ export default function SellPage() {
                   </div>
 
                   <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                    <span className="font-headline-sm text-headline-sm text-primary">₹{listing.price.toFixed(2)}</span>
+                    <span className="font-headline-sm text-headline-sm text-primary">${listing.price.toFixed(2)}</span>
                     <div className="flex gap-2">
                       <Link
                         href={`/product/${listing.id}`}
@@ -281,7 +281,7 @@ export default function SellPage() {
                   </div>
 
                   <div className="flex flex-col gap-1">
-                    <label htmlFor="listing-price" className="font-label-md text-label-md text-on-surface">Price (₹) <span className="text-error">*</span></label>
+                    <label htmlFor="listing-price" className="font-label-md text-label-md text-on-surface">Price ($) <span className="text-error">*</span></label>
                     <input
                       id="listing-price"
                       type="number"

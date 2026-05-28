@@ -91,7 +91,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Orders",    value: orders.length,               icon: "receipt_long",   color: "bg-blue-500"   },
-            { label: "Total Revenue",   value: `₹${totalRevenue.toFixed(0)}`, icon: "payments",     color: "bg-green-500"  },
+            { label: "Total Revenue",   value: `$${totalRevenue.toFixed(0)}`, icon: "payments",     color: "bg-green-500"  },
             { label: "Pending Pickup",  value: statusCount("Pending Pickup"), icon: "schedule",      color: "bg-amber-500"  },
             { label: "Completed",       value: statusCount("Completed"),      icon: "check_circle",  color: "bg-emerald-500" },
           ].map(stat => (
@@ -166,7 +166,7 @@ export default function AdminPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-4 font-semibold text-gray-900">₹{(order.total || 0).toFixed(2)}</td>
+                        <td className="px-5 py-4 font-semibold text-gray-900">${(order.total || 0).toFixed(2)}</td>
                         <td className="px-5 py-4">
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
                             order.status === "Completed"       ? "bg-emerald-100 text-emerald-700" :
@@ -221,7 +221,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4 font-semibold text-gray-900">{u.orderCount}</td>
-                        <td className="px-5 py-4 font-semibold text-gray-900">₹{u.totalSpent.toFixed(2)}</td>
+                        <td className="px-5 py-4 font-semibold text-gray-900">${u.totalSpent.toFixed(2)}</td>
                         <td className="px-5 py-4 text-gray-500">
                           {new Date(u.lastOrder).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                         </td>

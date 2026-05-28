@@ -182,7 +182,7 @@ export default function OrdersPage() {
                       </div>
                       <div className="flex flex-col justify-center min-w-0">
                         <p className="font-body-md text-on-surface leading-snug truncate">{item.title}</p>
-                        <p className="font-body-sm text-on-surface-variant">₹{item.price.toFixed(2)}</p>
+                        <p className="font-body-sm text-on-surface-variant">${item.price.toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -191,7 +191,7 @@ export default function OrdersPage() {
                 {/* Order Footer */}
                 <div className="flex items-center justify-between border-t border-outline-variant pt-4 flex-wrap gap-3">
                   <p className="font-headline-sm text-headline-sm text-primary">
-                    ₹{order.total.toFixed(2)}
+                    ${order.total.toFixed(2)}
                   </p>
                   <div className="flex gap-2">
                     {order.status === "Completed" && (

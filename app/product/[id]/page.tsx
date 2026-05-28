@@ -405,10 +405,10 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-baseline gap-2 mt-2 flex-wrap">
               <span className="font-headline-sm text-headline-sm text-primary">
-                ₹{product.price.toFixed(2)}
+                ${product.price.toFixed(2)}
               </span>
               <span className="font-body-sm text-body-sm text-outline-variant line-through">
-                ₹{product.originalPrice.toFixed(2)}
+                ${product.originalPrice.toFixed(2)}
               </span>
               <span className="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-label-md text-label-md">
                 {discount}% OFF
@@ -549,7 +549,7 @@ export default function ProductDetailPage() {
                   </div>
                   <div className="p-3">
                     <h3 className="font-label-md text-label-md text-on-surface line-clamp-1">{item.title}</h3>
-                    <p className="font-label-lg text-label-lg text-primary mt-1">₹{item.price.toFixed(2)}</p>
+                    <p className="font-label-lg text-label-lg text-primary mt-1">${item.price.toFixed(2)}</p>
                   </div>
                 </a>
               ))}
@@ -606,7 +606,7 @@ export default function ProductDetailPage() {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="font-label-lg text-label-lg font-bold text-primary">Price (₹) <span className="text-error">*</span></label>
+                  <label className="font-label-lg text-label-lg font-bold text-primary">Price ($) <span className="text-error">*</span></label>
                   <input type="number" step="0.01" min="0.01" required value={editForm.price} onChange={(e) => setEditForm(f => ({ ...f, price: e.target.value }))} className="w-full h-11 px-4 rounded-xl border border-outline-variant bg-surface text-on-surface focus:ring-2 focus:ring-secondary font-body-md outline-none" />
                 </div>
                 <div className="space-y-1">
